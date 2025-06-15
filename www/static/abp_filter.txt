@@ -1,0 +1,3 @@
+@@*.resqzone.com/
+@@api.resqzone.com
+@@www.resqzone.com

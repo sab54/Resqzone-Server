@@ -1,0 +1,371 @@
+const express = require('express');
+const bodyParser = require('body-parser');
+const geoip = require('geoip-lite');
+const pretty = require('express-prettify');
+
+module.exports = (db) => {
+    const router = express.Router({ caseSensitive: true });
+
+    router.use(pretty({ query: 'pretty' }));
+    router.use(bodyParser.urlencoded({ extended: false }));
+    router.use(bodyParser.json());
+
+    /**
+     * 📌 GET /user - Get user by token or IP info
+     */
+    router.get('/', async (req, res) => {
+        const getToken = req.query.token;
+        const ip =
+            (req.headers['x-forwarded-for'] || '').split(',').pop().trim() ||
+            req.connection.remoteAddress ||
+            req.socket?.remoteAddress;
+        const geodata = geoip.lookup(ip);
+        const info = { ip, geoData: geodata };
+
+        try {
+            if (getToken) {
+                const [rows] = await db.query(
+                    'SELECT first_name, last_name, email, phone_number, profile_picture_url, country_code, role, city, state, country, latitude, longitude FROM users WHERE token = ? LIMIT 1',
+                    [getToken]
+                );
+                if (rows.length === 0) {
+                    return res
+                        .status(401)
+                        .json({ error: 'Token is incorrect' });
+                }
+                return res.json({ user: rows[0], location: info });
+            } else {
+                return res.json(info);
+            }
+        } catch (err) {
+            console.error(err);
+            return res.status(500).json({ error: 'Failed to process request' });
+        }
+    });
+
+    // =======================================
+    // 📌 GET /chat/suggestions?q=search_term — Search active users
+    // =======================================
+    router.get('/suggestions', async (req, res) => {
+        const search =
+            typeof req.query.search === 'string'
+                ? req.query.search.trim().toLowerCase()
+                : '';
+
+        try {
+            let baseQuery = `
+                SELECT * FROM users
+                WHERE is_active = 1
+            `;
+
+            const params = [];
+
+            if (search) {
+                baseQuery += `
+                    AND (
+                        LOWER(first_name) LIKE ? OR
+                        LOWER(last_name) LIKE ? OR
+                        LOWER(CONCAT(first_name, ' ', last_name)) LIKE ? OR
+                        LOWER(email) LIKE ? OR
+                        phone_number LIKE ? OR
+                        LOWER(city) LIKE ? OR
+                        LOWER(state) LIKE ? OR
+                        LOWER(postal_code) LIKE ? OR
+                        LOWER(country) LIKE ?
+                    )
+                `;
+                const like = `%${search}%`;
+                params.push(
+                    like,
+                    like,
+                    like,
+                    like,
+                    like,
+                    like,
+                    like,
+                    like,
+                    like
+                );
+            }
+
+            baseQuery += ` ORDER BY created_at DESC LIMIT 5`;
+
+            const [rows] = await db.query(baseQuery, params);
+
+            const users = rows.map((user) => ({
+                id: user.id,
+                name: `${user.first_name} ${user.last_name || ''}`.trim(),
+                email: user.email,
+                phone_number: user.phone_number,
+                profile_picture_url: user.profile_picture_url,
+                date_of_birth: user.date_of_birth,
+                gender: user.gender,
+                address_line1: user.address_line1,
+                address_line2: user.address_line2,
+                city: user.city,
+                state: user.state,
+                postal_code: user.postal_code,
+                country: user.country,
+                latitude: user.latitude,
+                longitude: user.longitude,
+                role: user.role,
+                is_phone_verified: !!user.is_phone_verified,
+                created_at: user.created_at,
+                updated_at: user.updated_at,
+            }));
+
+            res.json({ success: true, data: users });
+        } catch (error) {
+            console.error('GET /chat/suggestions error:', error);
+            res.status(500).json({
+                success: false,
+                error: 'Failed to fetch users',
+            });
+        }
+    });
+
+    /**
+     * 📌 POST /register - Register a new user
+     */
+    router.post('/register', async (req, res) => {
+        const {
+            first_name,
+            last_name,
+            email,
+            phone_number,
+            country_code = '+44',
+            city,
+            state,
+            country,
+            latitude,
+            longitude,
+        } = req.body;
+
+        if (!first_name || !email || !phone_number || !country_code) {
+            return res
+                .status(400)
+                .json({ success: false, message: 'Missing required fields' });
+        }
+
+        try {
+            const [existing] = await db.query(
+                'SELECT id FROM users WHERE phone_number = ? AND country_code = ? OR email = ?',
+                [phone_number, country_code, email]
+            );
+            if (existing.length > 0) {
+                return res
+                    .status(409)
+                    .json({ success: false, message: 'User already exists' });
+            }
+
+            const getIP =
+                req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+            const geo = geoip.lookup(getIP);
+
+            const [insertResult] = await db.query(
+                `INSERT INTO users (first_name, last_name, email, phone_number, country_code, city, state, country, latitude, longitude)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                [
+                    first_name.trim(),
+                    last_name?.trim() || null,
+                    email.trim().toLowerCase(),
+                    phone_number.trim(),
+                    country_code.trim(),
+                    city || geo?.city || null,
+                    state || geo?.region || null,
+                    country || geo?.country || null,
+                    latitude || geo?.ll?.[0] || null,
+                    longitude || geo?.ll?.[1] || null,
+                ]
+            );
+
+            const otp_code = Math.floor(
+                100000 + Math.random() * 900000
+            ).toString();
+            const expires_at = new Date(Date.now() + 5 * 60 * 1000);
+            const ip = req.ip || req.connection.remoteAddress;
+            const userAgent = req.headers['user-agent'] || '';
+
+            await db.query(
+                `INSERT INTO otp_logins (user_id, otp_code, expires_at, ip_address, user_agent)
+                VALUES (?, ?, ?, ?, ?)`,
+                [insertResult.insertId, otp_code, expires_at, ip, userAgent]
+            );
+
+            console.log(`OTP for user ${insertResult.insertId}:`, otp_code);
+
+            return res.status(200).json({
+                success: true,
+                message: 'User registered successfully',
+                user_id: insertResult.insertId,
+            });
+        } catch (err) {
+            console.error(err);
+            return res
+                .status(500)
+                .json({ success: false, message: 'Server error' });
+        }
+    });
+
+    /**
+     * 📌 POST /request-otp - Generate OTP for existing user and invalidate previous
+     */
+    router.post('/request-otp', async (req, res) => {
+        const { phone_number, country_code = '+44' } = req.body;
+
+        if (!phone_number) {
+            return res.status(400).json({
+                success: false,
+                message: 'Phone number required',
+            });
+        }
+
+        try {
+            const [users] = await db.query(
+                'SELECT id FROM users WHERE phone_number = ? AND country_code = ?',
+                [phone_number, country_code]
+            );
+
+            if (users.length === 0) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'User not found',
+                });
+            }
+
+            const user_id = users[0].id;
+
+            await db.query(
+                `UPDATE otp_logins SET is_used = TRUE WHERE user_id = ? AND is_used = FALSE`,
+                [user_id]
+            );
+
+            const otp_code = Math.floor(
+                100000 + Math.random() * 900000
+            ).toString();
+            const expires_at = new Date(Date.now() + 5 * 60 * 1000);
+            const ip = req.ip || req.connection.remoteAddress;
+            const userAgent = req.headers['user-agent'] || '';
+
+            await db.query(
+                `INSERT INTO otp_logins (user_id, otp_code, expires_at, ip_address, user_agent)
+                VALUES (?, ?, ?, ?, ?)`,
+                [user_id, otp_code, expires_at, ip, userAgent]
+            );
+
+            console.log(`New OTP for user ${user_id}:`, otp_code);
+
+            return res.json({
+                success: true,
+                message: 'OTP sent successfully',
+                user_id,
+                otp_code,
+            });
+        } catch (err) {
+            console.error(err);
+            return res
+                .status(500)
+                .json({ success: false, message: 'OTP generation failed' });
+        }
+    });
+
+    /**
+     * 📌 POST /verify-otp - Validate OTP and return user
+     */
+    router.post('/verify-otp', async (req, res) => {
+        const { user_id, otp_code } = req.body;
+
+        if (!user_id || !otp_code) {
+            return res.status(400).json({
+                success: false,
+                message: 'Missing user_id or otp_code',
+            });
+        }
+
+        const now = new Date();
+        try {
+            const [results] = await db.query(
+                `SELECT * FROM otp_logins
+                WHERE user_id = ? AND otp_code = ? AND is_used = FALSE AND expires_at > ?
+                ORDER BY created_at DESC LIMIT 1`,
+                [user_id, otp_code, now]
+            );
+
+            if (results.length === 0) {
+                return res.status(401).json({
+                    success: false,
+                    message: 'Invalid or expired OTP',
+                });
+            }
+
+            const otp = results[0];
+            if (otp.attempts >= otp.max_attempts) {
+                return res
+                    .status(429)
+                    .json({ success: false, message: 'Too many attempts' });
+            }
+
+            await db.query(
+                `UPDATE otp_logins SET is_used = TRUE, attempts = attempts + 1 WHERE id = ?`,
+                [otp.id]
+            );
+
+            await db.query(
+                `UPDATE users SET is_phone_verified = TRUE WHERE id = ?`,
+                [user_id]
+            );
+
+            const [userResults] = await db.query(
+                `SELECT * FROM users WHERE id = ?`,
+                [user_id]
+            );
+
+            if (userResults.length === 0) {
+                return res
+                    .status(500)
+                    .json({ success: false, message: 'Failed to fetch user' });
+            }
+
+            return res.json({
+                success: true,
+                message: 'OTP verified',
+                user: userResults[0],
+            });
+        } catch (err) {
+            console.error(err);
+            return res
+                .status(500)
+                .json({ success: false, message: 'OTP verification failed' });
+        }
+    });
+
+    /**
+     * 📌 PATCH /user/:userId/location - Update user's location
+     */
+    router.patch('/:userId/location', async (req, res) => {
+        const userId = parseInt(req.params.userId);
+        const { latitude, longitude } = req.body;
+
+        if (isNaN(userId) || latitude == null || longitude == null) {
+            return res
+                .status(400)
+                .json({ success: false, message: 'Invalid input' });
+        }
+
+        try {
+            await db.query(
+                `UPDATE users SET latitude = ?, longitude = ? WHERE id = ?`,
+                [latitude, longitude, userId]
+            );
+            res.json({ success: true, message: 'User location updated' });
+        } catch (err) {
+            console.error('PATCH /user/:id/location error:', err);
+            res.status(500).json({
+                success: false,
+                message: 'Failed to update location',
+            });
+        }
+    });
+
+    return router;
+};
