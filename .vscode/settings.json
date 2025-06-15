@@ -1,0 +1,62 @@
+{
+    "workbench.colorTheme": "Default Dark+",
+    "workbench.iconTheme": "material-icon-theme",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {},
+
+    //My Settings
+    "breadcrumbs.enabled": true,
+
+    "css.lint.important": "warning",
+    "scss.lint.important": "warning",
+
+    "debug.toolBarLocation": "docked",
+
+    "editor.cursorBlinking": "phase",
+    "editor.cursorStyle": "line",
+    "editor.fontLigatures": true, // Please don't hate me.
+    "editor.lineHeight": 22,
+
+    "explorer.autoReveal": true,
+
+    "files.autoSave": "off",
+    "files.insertFinalNewline": true,
+    "files.trimTrailingWhitespace": true,
+
+    "html.format.enable": true,
+    "html.format.endWithNewline": false,
+
+    "javascript.format.enable": true,
+    "javascript.format.insertSpaceAfterConstructor": true,
+    "javascript.format.insertSpaceAfterFunctionKeywordForAnonymousFunctions": true,
+    "javascript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces": true,
+    "javascript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBrackets": false,
+    "javascript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis": false,
+    "javascript.updateImportsOnFileMove.enabled": "always",
+    "typescript.updateImportsOnFileMove.enabled": "always",
+
+    "markdown.preview.scrollEditorWithPreview": true,
+    "markdown.preview.scrollPreviewWithEditor": true,
+
+    "terminal.explorerKind": "external",
+    "terminal.external.osxExec": "iTerm.app",
+    "terminal.integrated.fontFamily": "monospace", // Install Powerline fonts for this to work
+    "terminal.integrated.fontSize": 12,
+    "terminal.integrated.shell.osx": "zsh",
+
+    "workbench.editor.enablePreview": false,
+    "workbench.editor.tabCloseButton": "right",
+    "workbench.editor.tabSizing": "shrink",
+    // "workbench.panel.defaultLocation": "right",
+    "workbench.settings.editor": "json",
+    "workbench.editor.tabActionLocation": "right",
+    "color-highlight.markerType": "dot-before",
+    "color-highlight.rgbWithNoFunctionLanguages": ["*"],
+    "prettier.tabWidth": 4,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "javascript.preferences.quoteStyle": "single",
+    "typescript.preferences.quoteStyle": "single",
+    "prettier.jsxSingleQuote": true,
+    "prettier.singleQuote": true
+    // "workbench.sideBar.location": "right",
+}
