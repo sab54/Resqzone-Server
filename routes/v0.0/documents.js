@@ -10,7 +10,7 @@ module.exports = (db) => {
     router.use(bodyParser.json());
 
     // ========================================
-    // 📌 GET /documents?user_id=123 - List docs
+    // 📌 GET /documents/:userId - List docs
     // ========================================
     router.get('/:userId', async (req, res) => {
         const user_id = parseInt(req.params.userId);
@@ -24,10 +24,12 @@ module.exports = (db) => {
 
         try {
             const [rows] = await db.query(
-                `SELECT * FROM documents
-                 WHERE (user_id = ? OR user_id IS NULL) AND deleted_at IS NULL
-                 ORDER BY uploaded_at DESC`,
-                [user_id]
+                `SELECT d.*,
+                        (SELECT read_at FROM document_reads r WHERE r.user_id = ? AND r.document_id = d.id) AS read_at
+                 FROM documents d
+                 WHERE (d.user_id = ? OR d.user_id IS NULL) AND d.deleted_at IS NULL
+                 ORDER BY d.uploaded_at DESC`,
+                [user_id, user_id]
             );
 
             res.json({ success: true, data: rows });
@@ -86,6 +88,73 @@ module.exports = (db) => {
             res.status(500).json({
                 success: false,
                 message: 'Failed to add document',
+            });
+        }
+    });
+
+    // ============================================
+    // 📌 POST /documents/:id/read - Mark as read
+    // ============================================
+    router.post('/read', async (req, res) => {
+        const { user_id, document_id } = req.body;
+
+        if (!user_id || !document_id) {
+            return res.status(400).json({
+                success: false,
+                message: 'Missing user_id or document_id',
+            });
+        }
+
+        try {
+            await db.query(
+                `INSERT INTO document_reads (user_id, document_id)
+                 VALUES (?, ?)
+                 ON DUPLICATE KEY UPDATE read_at = CURRENT_TIMESTAMP`,
+                [user_id, document_id]
+            );
+
+            res.json({ success: true, message: 'Document marked as read' });
+        } catch (err) {
+            console.error('POST /documents/:id/read error:', err);
+            res.status(500).json({
+                success: false,
+                message: 'Failed to mark as read',
+            });
+        }
+    });
+
+    // =============================================
+    // 📌 DELETE /documents/:id/read - Mark as unread
+    // =============================================
+    router.delete('/read', async (req, res) => {
+        const { user_id, document_id } = req.query;
+
+        if (!user_id || !document_id) {
+            return res.status(400).json({
+                success: false,
+                message: 'Missing user_id or document_id',
+            });
+        }
+
+        try {
+            const [result] = await db.query(
+                `DELETE FROM document_reads WHERE user_id = ? AND document_id = ?`,
+                [user_id, document_id]
+            );
+
+            if (result.affectedRows === 0) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Document was not marked as read',
+                });
+            }
+
+            res.json({ success: true, message: 'Document marked as unread' });
+        } catch (err) {
+            console.error('DELETE /documents/:id/read error:', err);
+            res.status(500).json({
+                success: false,
+                message: 'Failed to mark as unread',
             });
         }
     });
