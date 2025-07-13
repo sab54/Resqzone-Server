@@ -10,9 +10,9 @@ module.exports = (db) => {
     router.use(bodyParser.urlencoded({ extended: false }));
     router.use(bodyParser.json());
 
-    /**
-     * 📌 GET /user - Get user by token or IP info
-     */
+    // =============================
+    // 📌 GET /user - By token or IP
+    // =============================
     router.get('/', async (req, res) => {
         const getToken = req.query.token;
         const ip =
@@ -43,9 +43,9 @@ module.exports = (db) => {
         }
     });
 
-    // =======================================
+    // =============================
     // 📌 GET /chat/suggestions?q=search_term — Search active users
-    // =======================================
+    // =============================
     router.get('/suggestions', async (req, res) => {
         const search =
             typeof req.query.search === 'string'
@@ -124,9 +124,9 @@ module.exports = (db) => {
         }
     });
 
-    /**
-     * 📌 POST /register - Register a new user
-     */
+    // =============================
+    // 📌 POST /register
+    // =============================
     router.post('/register', async (req, res) => {
         const {
             first_name,
@@ -207,17 +207,16 @@ module.exports = (db) => {
         }
     });
 
-    /**
-     * 📌 POST /request-otp - Generate OTP for existing user and invalidate previous
-     */
+    // =============================
+    // 📌 POST /request-otp - Generate OTP for existing user and invalidate previous
+    // =============================
     router.post('/request-otp', async (req, res) => {
         const { phone_number, country_code = '+44' } = req.body;
 
         if (!phone_number) {
-            return res.status(400).json({
-                success: false,
-                message: 'Phone number required',
-            });
+            return res
+                .status(400)
+                .json({ success: false, message: 'Phone number required' });
         }
 
         try {
@@ -227,10 +226,9 @@ module.exports = (db) => {
             );
 
             if (users.length === 0) {
-                return res.status(404).json({
-                    success: false,
-                    message: 'User not found',
-                });
+                return res
+                    .status(404)
+                    .json({ success: false, message: 'User not found' });
             }
 
             const user_id = users[0].id;
@@ -269,9 +267,9 @@ module.exports = (db) => {
         }
     });
 
-    /**
-     * 📌 POST /verify-otp - Validate OTP and return user
-     */
+    // =============================
+    // 📌 POST /verify-otp - Validate OTP and return user
+    // =============================
     router.post('/verify-otp', async (req, res) => {
         const { user_id, otp_code } = req.body;
 
@@ -282,8 +280,8 @@ module.exports = (db) => {
             });
         }
 
-        const now = new Date();
         try {
+            const now = new Date();
             const [results] = await db.query(
                 `SELECT * FROM otp_logins
                 WHERE user_id = ? AND otp_code = ? AND is_used = FALSE AND expires_at > ?
@@ -309,7 +307,6 @@ module.exports = (db) => {
                 `UPDATE otp_logins SET is_used = TRUE, attempts = attempts + 1 WHERE id = ?`,
                 [otp.id]
             );
-
             await db.query(
                 `UPDATE users SET is_phone_verified = TRUE WHERE id = ?`,
                 [user_id]
@@ -319,12 +316,6 @@ module.exports = (db) => {
                 `SELECT * FROM users WHERE id = ?`,
                 [user_id]
             );
-
-            if (userResults.length === 0) {
-                return res
-                    .status(500)
-                    .json({ success: false, message: 'Failed to fetch user' });
-            }
 
             return res.json({
                 success: true,
@@ -339,9 +330,9 @@ module.exports = (db) => {
         }
     });
 
-    /**
-     * 📌 PATCH /user/:userId/location - Update user's location
-     */
+    // =============================
+    // 📌 PATCH /user/:userId/location - Update user's location
+    // =============================
     router.patch('/:userId/location', async (req, res) => {
         const userId = parseInt(req.params.userId);
         const { latitude, longitude } = req.body;
@@ -363,6 +354,113 @@ module.exports = (db) => {
             res.status(500).json({
                 success: false,
                 message: 'Failed to update location',
+            });
+        }
+    });
+
+    // =============================
+    // 📌 Emergency Contact Routes
+    // =============================
+    router.get('/emergency-contacts/:userId', async (req, res) => {
+        const userId = parseInt(req.params.userId);
+        if (isNaN(userId)) {
+            return res
+                .status(400)
+                .json({ success: false, message: 'Invalid user ID' });
+        }
+
+        try {
+            const [rows] = await db.query(
+                'SELECT id, name, phone_number, created_at FROM emergency_contacts WHERE user_id = ? AND deleted_at IS NULL ORDER BY created_at DESC',
+                [userId]
+            );
+            res.json({ success: true, data: rows });
+        } catch (err) {
+            console.error('GET /emergency-contacts error:', err);
+            res.status(500).json({
+                success: false,
+                message: 'Failed to fetch contacts',
+            });
+        }
+    });
+
+    router.post('/emergency-contacts', async (req, res) => {
+        const { user_id, name, phone_number } = req.body;
+
+        if (!user_id || !name || !phone_number) {
+            return res
+                .status(400)
+                .json({ success: false, message: 'Missing required fields' });
+        }
+
+        try {
+            // Check for an existing *active* contact
+            const [existingActive] = await db.query(
+                'SELECT id FROM emergency_contacts WHERE user_id = ? AND phone_number = ? AND deleted_at IS NULL',
+                [user_id, phone_number]
+            );
+
+            if (existingActive.length > 0) {
+                return res.status(409).json({
+                    success: false,
+                    message: 'Contact already exists',
+                });
+            }
+
+            // Check if the contact exists but was soft-deleted
+            const [existingDeleted] = await db.query(
+                'SELECT id FROM emergency_contacts WHERE user_id = ? AND phone_number = ? AND deleted_at IS NOT NULL',
+                [user_id, phone_number]
+            );
+
+            if (existingDeleted.length > 0) {
+                // Restore soft-deleted contact
+                await db.query(
+                    'UPDATE emergency_contacts SET deleted_at = NULL, name = ? WHERE id = ?',
+                    [name.trim(), existingDeleted[0].id]
+                );
+
+                return res.json({
+                    success: true,
+                    message: 'Emergency contact restored',
+                });
+            }
+
+            // Otherwise, insert a new contact
+            await db.query(
+                'INSERT INTO emergency_contacts (user_id, name, phone_number) VALUES (?, ?, ?)',
+                [user_id, name.trim(), phone_number.trim()]
+            );
+
+            res.json({ success: true, message: 'Emergency contact added' });
+        } catch (err) {
+            console.error('POST /emergency-contacts error:', err);
+            res.status(500).json({
+                success: false,
+                message: 'Failed to add contact',
+            });
+        }
+    });
+
+    router.delete('/emergency-contacts/:id', async (req, res) => {
+        const contactId = parseInt(req.params.id);
+        if (isNaN(contactId)) {
+            return res
+                .status(400)
+                .json({ success: false, message: 'Invalid contact ID' });
+        }
+
+        try {
+            await db.query(
+                'UPDATE emergency_contacts SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?',
+                [contactId]
+            );
+            res.json({ success: true, message: 'Emergency contact deleted' });
+        } catch (err) {
+            console.error('DELETE /emergency-contacts error:', err);
+            res.status(500).json({
+                success: false,
+                message: 'Failed to delete contact',
             });
         }
     });
