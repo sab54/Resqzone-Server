@@ -48,6 +48,8 @@ module.exports = (db, io = null) => {
     // Express body parser
     app.use(express.urlencoded({ extended: true }));
     app.use(cookieParser());
+
+    // Static routes
     app.use(express.static(path.join(__dirname, 'www/static')));
     app.use(favicon(path.join(__dirname, 'www/static/Home/images/logo.png')));
 
@@ -94,9 +96,11 @@ module.exports = (db, io = null) => {
     app.use('/ads/', limiter); */
     app.options('*', (req, res) => res.sendStatus(200));
 
-    // ⬇️ Pass db to routes that need it
+    // Routes
     app.use('/v0.0/users', require('./routes/v0.0/users')(db));
     app.use('/v0.0/news', require('./routes/v0.0/news')(db));
+    app.use('/v0.0/documents', require('./routes/v0.0/documents')(db));
+
     app.use('/v0.0/chat', require('./routes/v0.0/chat')(db, io));
     app.use('/v0.0/quizzes', require('./routes/v0.0/Games/quizzes')(db));
     app.use('/v0.0/tasks', require('./routes/v0.0/Games/tasks')(db));
@@ -108,10 +112,10 @@ module.exports = (db, io = null) => {
     );
     app.use('/v0.0/alerts', require('./routes/v0.0/alerts')(db));
 
-    // 404 Not Found
+    // 404 handler
     app.use((req, res, next) => next(createError(404)));
 
-    // General Error Handler
+    // Global error handler
     app.use((err, req, res, next) => {
         res.locals.message = err.message;
         res.locals.error = req.app.get('env') === 'development' ? err : {};

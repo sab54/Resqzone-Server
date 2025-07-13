@@ -114,6 +114,67 @@ CREATE TABLE otp_logins (
 );
 
 -- ===========================================
+-- DOCUMENTS TABLE
+-- ===========================================
+CREATE TABLE documents (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT UNSIGNED DEFAULT NULL COMMENT 'If null, document is global to all users',
+    title VARCHAR(255) NOT NULL,
+    description TEXT DEFAULT NULL,
+    file_url TEXT NOT NULL,
+    file_type VARCHAR(50) DEFAULT NULL COMMENT 'e.g., pdf, docx, jpg',
+    category VARCHAR(100) DEFAULT 'General',
+    is_active BOOLEAN DEFAULT TRUE,
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL DEFAULT NULL COMMENT 'Soft delete',
+    uploaded_by BIGINT UNSIGNED DEFAULT NULL COMMENT 'Admin/moderator who uploaded the file',
+
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (uploaded_by) REFERENCES users(id) ON DELETE SET NULL,
+
+    INDEX idx_user_file (user_id, file_type),
+    INDEX idx_category (category)
+);
+
+INSERT INTO documents (
+    user_id,
+    title,
+    description,
+    file_url,
+    file_type,
+    category,
+    uploaded_by
+) VALUES (
+    NULL,
+    'Final Project Templates',
+    'Standard templates for final project submissions.',
+    '/documents/FinalProjectTemplates.pdf',
+    'application/pdf',
+    'Templates',
+    1 -- replace with actual admin user ID if needed
+);
+
+-- ===========================================
+-- DOCUMENT_READS TABLE
+-- Tracks whether a user has read a specific document
+-- ===========================================
+CREATE TABLE document_reads (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT UNSIGNED NOT NULL,
+    document_id BIGINT UNSIGNED NOT NULL,
+    read_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    UNIQUE KEY uniq_user_document (user_id, document_id),
+
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE,
+
+    INDEX idx_user (user_id),
+    INDEX idx_document (document_id)
+);
+
+-- ===========================================
 -- EMERGENCY CONTACTS TABLE
 -- ===========================================
 CREATE TABLE emergency_contacts (
