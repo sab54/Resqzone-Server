@@ -403,9 +403,11 @@ module.exports = (db, io) => {
     // 📌 POST /chat/local-groups/join
     const RADIUS_KM = 0.2; // Default radius for local groups
     router.post('/local-groups/join', async (req, res) => {
-        const { userId, latitude, longitude } = req.body;
+        const { userId, latitude, longitude, hasAddress, address } = req.body;
 
-        if (!userId || !latitude || !longitude) {
+        console.log('req.body: ', req.body);
+
+        if (!userId || !latitude || !longitude || !address) {
             return res.status(400).json({
                 success: false,
                 error: 'userId, latitude, and longitude are required',
@@ -449,12 +451,16 @@ module.exports = (db, io) => {
                 );
             } else {
                 // 🆕 Create new group with lat/lon and radius
-                const groupName = `Local Group (${lat.toFixed(
-                    5
-                )}, ${lon.toFixed(5)})`;
+                var groupName = '';
+                if (!hasAddress) {
+                    groupName = `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+                } else {
+                    groupName = `${address.street}`;
+                }
+
                 const [result] = await db.query(
                     `INSERT INTO chats (is_group, name, latitude, longitude, radius_km, created_by)
-                 VALUES (1, ?, ?, ?, ?, ?)`,
+                    VALUES (1, ?, ?, ?, ?, ?)`,
                     [groupName, lat, lon, RADIUS_KM, userId]
                 );
                 chatId = result.insertId;
