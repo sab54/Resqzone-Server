@@ -44,8 +44,8 @@ INSERT INTO users (
 ) VALUES
 ('9999999999', '+44', 'laura.murphy@example.com', 'Laura', 'Murphy', '2004-08-10', 'male', '13 Example Street', 'Birmingham', 'borough', 'M1 2BB', 'UK', TRUE, 'user', TRUE, NULL, NULL),
 ('7777777777', '+44', 'dean.green@example.com', 'Dean', 'Green', '1995-04-30', 'female', '15 Example Street', 'Leeds', 'town', 'CB1 9II', 'UK', TRUE, 'moderator', TRUE, NULL, NULL),
-('7000000002', '+44', 'carolyn.taylor@example.com', 'Carolyn', 'Taylor', '2003-08-19', 'female', '15 Example Street', 'Liverpool', 'city', 'E1 1AA', 'UK', TRUE, 'user', TRUE, NULL, NULL),
-('7000000003', '+44', 'jake.ward@example.com', 'Jake', 'Ward', '1990-01-29', 'male', '88 Example Street', 'Leeds', 'village', 'S1 6FF', 'UK', TRUE, 'admin', TRUE, NULL, NULL),
+('0000000000', '+44', 'carolyn.taylor@example.com', 'Carolyn', 'Taylor', '2003-08-19', 'female', '15 Example Street', 'Liverpool', 'city', 'E1 1AA', 'UK', TRUE, 'user', TRUE, NULL, NULL),
+('1111111111', '+44', 'jake.ward@example.com', 'Jake', 'Ward', '1990-01-29', 'male', '88 Example Street', 'Leeds', 'village', 'S1 6FF', 'UK', TRUE, 'admin', TRUE, NULL, NULL),
 ('7000000004', '+44', 'zoe.campbell@example.com', 'Zoe', 'Campbell', '2010-03-19', 'male', '96 Example Street', 'Oxford', 'borough', 'B1 7GG', 'UK', TRUE, 'moderator', TRUE, NULL, NULL),
 ('7000000005', '+44', 'ethan.walker@example.com', 'Ethan', 'Walker', '1998-12-07', 'female', '69 Example Street', 'Liverpool', 'town', 'NG1 8HH', 'UK', TRUE, 'moderator', TRUE, NULL, NULL),
 ('7000000006', '+44', 'chloe.wright@example.com', 'Chloe', 'Wright', '1995-09-11', 'male', '18 Example Street', 'Liverpool', 'city', 'S1 6FF', 'UK', TRUE, 'admin', TRUE, NULL, NULL),

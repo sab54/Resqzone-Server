@@ -176,14 +176,15 @@ module.exports = (db, io) => {
         }
 
         try {
-            // Check for existing direct chat
+            // Check if direct chat already exists
             if (!is_group && participant_ids.length === 1) {
                 const otherId = participant_ids[0];
                 const [existing] = await db.query(
                     `SELECT c.id FROM chats c
-                    JOIN chat_members cm1 ON cm1.chat_id = c.id AND cm1.user_id = ?
-                    JOIN chat_members cm2 ON cm2.chat_id = c.id AND cm2.user_id = ?
-                    WHERE c.is_group = 0 GROUP BY c.id`,
+                 JOIN chat_members cm1 ON cm1.chat_id = c.id AND cm1.user_id = ?
+                 JOIN chat_members cm2 ON cm2.chat_id = c.id AND cm2.user_id = ?
+                 WHERE c.is_group = 0
+                 GROUP BY c.id`,
                     [user_id, otherId]
                 );
                 if (existing.length > 0) {
@@ -202,9 +203,10 @@ module.exports = (db, io) => {
             );
             const chatId = chatResult.insertId;
 
-            // Insert chat members
             const allUserIds = [...new Set([user_id, ...participant_ids])];
-            const values = allUserIds
+
+            // Add chat members
+            const memberValues = allUserIds
                 .map(
                     (id) =>
                         `(${chatId}, ${id}, '${
@@ -213,10 +215,10 @@ module.exports = (db, io) => {
                 )
                 .join(', ');
             await db.query(
-                `INSERT INTO chat_members (chat_id, user_id, role) VALUES ${values}`
+                `INSERT INTO chat_members (chat_id, user_id, role) VALUES ${memberValues}`
             );
 
-            // Insert alerts for participants
+            // Insert user alerts
             const alertValues = participant_ids
                 .map((id) => {
                     const title = is_group
@@ -232,15 +234,42 @@ module.exports = (db, io) => {
                     )}, ${db.escape(message)})`;
                 })
                 .join(', ');
-
             await db.query(
                 `INSERT INTO user_alerts (user_id, type, related_id, title, message) VALUES ${alertValues}`
             );
 
-            res.status(201).json({
+            // Fetch full chat with members
+            const [[chat]] = await db.query(
+                `SELECT * FROM chats WHERE id = ?`,
+                [chatId]
+            );
+
+            const [members] = await db.query(
+                `SELECT cm.user_id, cm.role, u.first_name, u.last_name, u.email
+             FROM chat_members cm
+             JOIN users u ON u.id = cm.user_id
+             WHERE cm.chat_id = ?`,
+                [chatId]
+            );
+
+            // Determine 1-on-1 chat display name
+            if (!chat.is_group) {
+                const otherUser = members.find((m) => m.user_id !== user_id);
+                chat.name = otherUser
+                    ? `${otherUser.first_name} ${
+                          otherUser.last_name || ''
+                      }`.trim()
+                    : 'Direct Chat';
+            }
+
+            return res.status(201).json({
                 success: true,
                 message: 'Chat created successfully',
                 chat_id: chatId,
+                chat: {
+                    ...chat,
+                    members,
+                },
             });
         } catch (error) {
             console.error('POST /chat/create failed:', error);
@@ -404,8 +433,6 @@ module.exports = (db, io) => {
     const RADIUS_KM = 0.2; // Default radius for local groups
     router.post('/local-groups/join', async (req, res) => {
         const { userId, latitude, longitude, hasAddress, address } = req.body;
-
-        console.log('req.body: ', req.body);
 
         if (!userId || !latitude || !longitude || !address) {
             return res.status(400).json({
