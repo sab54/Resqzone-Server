@@ -482,7 +482,11 @@ module.exports = (db, io) => {
                 if (!hasAddress) {
                     groupName = `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
                 } else {
-                    groupName = `${address.street}`;
+                    groupName = address.street
+                        ? `${address.street}`
+                        : `${address.city}`;
+
+                    console.log('groupName: ', groupName);
                 }
 
                 const [result] = await db.query(
