@@ -3,10 +3,6 @@ const express = require('express');
 module.exports = (db) => {
     const router = express.Router();
 
-    /**
-     * 📌 GET /leaderboard?city=...&role=...
-     * Get top 20 users sorted by XP, optionally filtered by city and/or role
-     */
     router.get('/', async (req, res) => {
         const { city = null, role = null } = req.query;
 

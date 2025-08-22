@@ -49,9 +49,7 @@ module.exports = (db) => {
         }
     });
 
-    /**
-     * 📌 GET /alerts/user/:userId - Fetch user alerts
-     */
+    // GET /alerts/user/:userId - Fetch user alerts
     router.get('/user/:userId', async (req, res) => {
         const userId = parseInt(req.params.userId);
         if (isNaN(userId)) {
@@ -104,9 +102,7 @@ module.exports = (db) => {
         }
     });
 
-    /**
-     * 📌 POST /alerts/system - Create system alert for users
-     */
+    // POST /alerts/system - Create system alert for users
     router.post('/system', async (req, res) => {
         const {
             userIds,
@@ -155,9 +151,7 @@ module.exports = (db) => {
         }
     });
 
-    /**
-     * 📌 POST /alerts/emergency - Create emergency alerts based on location proximity
-     */
+    // POST /alerts/emergency - Create emergency alerts based on location proximity
     router.post('/emergency', async (req, res) => {
         const {
             title,
@@ -248,9 +242,7 @@ module.exports = (db) => {
         }
     });
 
-    /**
-     * 📌 PATCH /alerts/:alertId/read - Mark an alert as read
-     */
+    // PATCH /alerts/:alertId/read - Mark an alert as read
     router.patch('/:alertId/read', async (req, res) => {
         const alertId = parseInt(req.params.alertId);
         const { type, userId } = req.body;
@@ -296,9 +288,7 @@ module.exports = (db) => {
         }
     });
 
-    /**
-     * 📌 DELETE /alerts/:alertId - Delete an alert
-     */
+    // DELETE /alerts/:alertId - Delete an alert
     router.delete('/:alertId', async (req, res) => {
         const alertId = parseInt(req.params.alertId);
         if (isNaN(alertId)) {

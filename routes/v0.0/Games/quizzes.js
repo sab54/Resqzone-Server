@@ -8,7 +8,7 @@ module.exports = (db) => {
     router.use(bodyParser.urlencoded({ extended: false }));
     router.use(bodyParser.json());
 
-    // 📌 GET /quizzes - All active quizzes
+    // GET /quizzes - All active quizzes
     router.get('/', async (req, res) => {
         try {
             const [quizzes] = await db.query(
@@ -25,7 +25,7 @@ module.exports = (db) => {
         }
     });
 
-    // 📌 GET /quizzes/user/:user_id - Assigned quizzes only
+    // GET /quizzes/user/:user_id - Assigned quizzes only
     router.get('/user/:user_id', async (req, res) => {
         const userId = parseInt(req.params.user_id);
         if (isNaN(userId)) {
@@ -53,7 +53,7 @@ module.exports = (db) => {
         }
     });
 
-    // 📌 GET /quizzes/history/:user_id
+    // GET /quizzes/history/:user_id
     router.get('/history/:user_id', async (req, res) => {
         const userId = parseInt(req.params.user_id);
         if (isNaN(userId))
@@ -80,7 +80,7 @@ module.exports = (db) => {
         }
     });
 
-    // 📌 GET /quizzes/:id/stats
+    // GET /quizzes/:id/stats
     router.get('/:id/stats', async (req, res) => {
         const quizId = parseInt(req.params.id);
         if (isNaN(quizId))
@@ -105,7 +105,7 @@ module.exports = (db) => {
         }
     });
 
-    // 📌 GET /quizzes/:id - Quiz with questions + options
+    // GET /quizzes/:id - Quiz with questions + options
     router.get('/:id', async (req, res) => {
         const quizId = parseInt(req.params.id);
         if (isNaN(quizId))
@@ -147,7 +147,7 @@ module.exports = (db) => {
         }
     });
 
-    // 📌 POST /quizzes/:id/submit - Submit quiz answers
+    // POST /quizzes/:id/submit - Submit quiz answers
     router.post('/:id/submit', async (req, res) => {
         const quizId = parseInt(req.params.id);
         const { user_id, answers } = req.body;
@@ -293,7 +293,7 @@ module.exports = (db) => {
         }
     });
 
-    // 📌 POST /quizzes/ai-generate
+    // POST /quizzes/ai-generate
     router.post('/ai-generate', async (req, res) => {
         const { topic, difficulty = 'medium', chatId, createdBy } = req.body;
         if (!topic || !chatId || !createdBy) {

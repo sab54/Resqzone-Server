@@ -9,9 +9,7 @@ module.exports = (db) => {
     router.use(bodyParser.urlencoded({ extended: false }));
     router.use(bodyParser.json());
 
-    // ========================================
-    // 📌 GET /documents/:userId - List docs
-    // ========================================
+    // GET /documents/:userId - List docs
     router.get('/:userId', async (req, res) => {
         const user_id = parseInt(req.params.userId);
 
@@ -42,9 +40,7 @@ module.exports = (db) => {
         }
     });
 
-    // ========================================
-    // 📌 POST /documents - Add new document
-    // ========================================
+    // POST /documents - Add new document
     router.post('/', async (req, res) => {
         const {
             user_id,
@@ -92,9 +88,7 @@ module.exports = (db) => {
         }
     });
 
-    // ============================================
-    // 📌 POST /documents/:id/read - Mark as read
-    // ============================================
+    // POST /documents/:id/read - Mark as read
     router.post('/read', async (req, res) => {
         const { user_id, document_id } = req.body;
 
@@ -123,9 +117,7 @@ module.exports = (db) => {
         }
     });
 
-    // =============================================
-    // 📌 DELETE /documents/:id/read - Mark as unread
-    // =============================================
+    // DELETE /documents/:id/read - Mark as unread
     router.delete('/read', async (req, res) => {
         const { user_id, document_id } = req.query;
 
@@ -159,9 +151,7 @@ module.exports = (db) => {
         }
     });
 
-    // ===================================================
-    // 📌 DELETE /documents - Soft delete a document by URL
-    // ===================================================
+    // DELETE /documents - Soft delete a document by URL
     router.delete('/', async (req, res) => {
         const { user_id, url } = req.body;
 
@@ -196,9 +186,7 @@ module.exports = (db) => {
         }
     });
 
-    // ===================================================
-    // 📌 DELETE /documents/all - Soft delete all user docs
-    // ===================================================
+    // DELETE /documents/all - Soft delete all user docs
     router.delete('/all', async (req, res) => {
         const { user_id } = req.body;
 

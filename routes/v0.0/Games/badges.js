@@ -7,7 +7,7 @@ module.exports = (db) => {
     router.use(bodyParser.urlencoded({ extended: false }));
     router.use(bodyParser.json());
 
-    // 📌 GET /badges - List all available badges
+    // GET /badges - List all available badges
     router.get('/', async (req, res) => {
         try {
             const [badges] = await db.query(`
@@ -25,7 +25,7 @@ module.exports = (db) => {
         }
     });
 
-    // 📌 GET /badges/user/:user_id - Get user's earned badges
+    // GET /badges/user/:user_id - Get user's earned badges
     router.get('/user/:user_id', async (req, res) => {
         const userId = parseInt(req.params.user_id);
         if (isNaN(userId)) {
@@ -57,7 +57,7 @@ module.exports = (db) => {
         }
     });
 
-    // 📌 POST /badges/award - Assign badge to user
+    // POST /badges/award - Assign badge to user
     router.post('/award', async (req, res) => {
         const userId = parseInt(req.body.user_id);
         const badgeId = parseInt(req.body.badge_id);

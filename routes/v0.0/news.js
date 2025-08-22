@@ -14,9 +14,7 @@ module.exports = (db) => {
         return new Date(isoDate).toISOString().slice(0, 19).replace('T', ' ');
     };
 
-    /**
-     * 📌 GET /bookmarks - Get all bookmarks for a user
-     */
+    // GET /bookmarks - Get all bookmarks for a user
     router.get('/bookmarks', async (req, res) => {
         const userId = req.query.user_id;
 
@@ -50,9 +48,7 @@ module.exports = (db) => {
         }
     });
 
-    /**
-     * 📌 POST /bookmarks - Add a new bookmark
-     */
+    // POST /bookmarks - Add a new bookmark
     router.post('/bookmarks', async (req, res) => {
         const {
             user_id,
@@ -110,9 +106,7 @@ module.exports = (db) => {
         }
     });
 
-    /**
-     * 📌 DELETE /bookmarks - Delete a single bookmark
-     */
+    // DELETE /bookmarks - Delete a single bookmark
     router.delete('/bookmarks', async (req, res) => {
         const { user_id, url } = req.query;
 
@@ -137,9 +131,7 @@ module.exports = (db) => {
         }
     });
 
-    /**
-     * 📌 DELETE /bookmarks/all - Delete all bookmarks for a user
-     */
+    // DELETE /bookmarks/all - Delete all bookmarks for a user
     router.delete('/bookmarks/all', async (req, res) => {
         const { user_id } = req.query;
 

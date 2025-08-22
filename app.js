@@ -24,7 +24,7 @@ const {
 module.exports = (db, io = null) => {
     const app = express();
 
-    // ✅ Make socket.io instance accessible to routes if provided
+    // Make socket.io instance accessible to routes if provided
     if (io) app.set('io', io);
 
     // EJS View Engine Setup
@@ -35,7 +35,7 @@ module.exports = (db, io = null) => {
 
     // Compress all HTTP responses
     app.use(compression());
-    //Use this to show log Get output:- app.use(logger("dev"));
+    // Use this to show log Get output:- app.use(logger("dev"));
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
 
@@ -67,7 +67,7 @@ module.exports = (db, io = null) => {
         app.use(flash());
     }
 
-    // ✅ CORS Support
+    // CORS Support
     app.use((req, res, next) => {
         res.setHeader('Access-Control-Allow-Origin', '*');
         res.setHeader(
@@ -82,7 +82,7 @@ module.exports = (db, io = null) => {
         next();
     });
 
-    // ✅ Rate Limiting
+    // Rate Limiting
     const limiter = rateLimit({
         windowMs: rateLimitWindowMs,
         max: rateLimitMaxRequests,

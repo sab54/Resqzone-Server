@@ -1,4 +1,3 @@
-// middleware/encryptMiddleware.js
 const crypto = require('crypto');
 const Config = require('../../config');
 
@@ -42,7 +41,7 @@ module.exports = (req, res, next) => {
                 payload: encrypted,
             });
         } catch (err) {
-            console.error('❌ Encryption error:', err.message);
+            console.error('Encryption error:', err.message);
 
             return originalJson.call(res, {
                 success: false,

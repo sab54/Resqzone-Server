@@ -8,7 +8,7 @@ module.exports = (db, io) => {
     router.use(bodyParser.json());
     router.use(bodyParser.urlencoded({ extended: false }));
 
-    // 📌 GET /chat/list/:user_id
+    // GET /chat/list/:user_id
     router.get('/list/:user_id', async (req, res) => {
         const userId = parseInt(req.params.user_id);
         if (isNaN(userId)) {
@@ -155,7 +155,7 @@ module.exports = (db, io) => {
         }
     });
 
-    // 📌 POST /chat/create
+    // POST /chat/create
     router.post('/create', async (req, res) => {
         const {
             user_id,
@@ -280,7 +280,7 @@ module.exports = (db, io) => {
         }
     });
 
-    // 📌 POST /chat/:chat_id/add-members
+    // POST /chat/:chat_id/add-members
     router.post('/:chat_id/add-members', async (req, res) => {
         const chatId = parseInt(req.params.chat_id);
         const { user_id, user_ids } = req.body;
@@ -307,7 +307,7 @@ module.exports = (db, io) => {
                 `INSERT IGNORE INTO chat_members (chat_id, user_id, role) VALUES ${values}`
             );
 
-            // ✅ Use valid urgency level: 'advisory'
+            // Use valid urgency level: 'advisory'
             const alerts = user_ids
                 .map(
                     (uid) =>
@@ -341,7 +341,7 @@ module.exports = (db, io) => {
         }
     });
 
-    // 📌 DELETE /chat/:chat_id/remove-member
+    // DELETE /chat/:chat_id/remove-member
     router.delete('/:chat_id/remove-member', async (req, res) => {
         const chatId = parseInt(req.params.chat_id);
         const { user_id, requested_by } = req.query;
@@ -429,7 +429,7 @@ module.exports = (db, io) => {
         }
     });
 
-    // 📌 POST /chat/local-groups/join
+    // POST /chat/local-groups/join
     const RADIUS_KM = 0.2; // Default radius for local groups
     router.post('/local-groups/join', async (req, res) => {
         const { userId, latitude, longitude, hasAddress, address } = req.body;
@@ -445,7 +445,7 @@ module.exports = (db, io) => {
             const lat = parseFloat(latitude);
             const lon = parseFloat(longitude);
 
-            // 📍 Step 1: Find nearby existing local group using Haversine formula
+            // Step 1: Find nearby existing local group using Haversine formula
             const [rows] = await db.query(
                 `
             SELECT id, name, latitude, longitude, radius_km,
@@ -470,14 +470,14 @@ module.exports = (db, io) => {
             let isNew = false;
 
             if (rows.length > 0) {
-                // 🟢 Join existing nearby group
+                // Join existing nearby group
                 chatId = rows[0].id;
                 await db.query(
                     `INSERT IGNORE INTO chat_members (chat_id, user_id, role) VALUES (?, ?, 'member')`,
                     [chatId, userId]
                 );
             } else {
-                // 🆕 Create new group with lat/lon and radius
+                // Create new group with lat/lon and radius
                 var groupName = '';
                 if (!hasAddress) {
                     groupName = `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
@@ -503,7 +503,7 @@ module.exports = (db, io) => {
                 );
             }
 
-            // 🔔 Notify user via alert
+            // Notify user via alert
             const alertTitle = isNew
                 ? 'New Local Group Created'
                 : 'Joined Nearby Local Group';
@@ -517,7 +517,7 @@ module.exports = (db, io) => {
                 [userId, chatId, alertTitle, alertMessage]
             );
 
-            // 📡 Trigger UI update
+            // Trigger UI update
             if (io) {
                 io.to(`user_${userId}`).emit('chat:list_update:trigger');
             }
@@ -530,7 +530,7 @@ module.exports = (db, io) => {
                 chat_id: chatId,
             });
         } catch (error) {
-            console.error('❌ /local-groups/join failed:', error);
+            console.error('/local-groups/join failed:', error);
             return res.status(500).json({
                 success: false,
                 error: 'Failed to join local group',
@@ -538,7 +538,7 @@ module.exports = (db, io) => {
         }
     });
 
-    // 📌 DELETE /chat/:chat_id
+    // DELETE /chat/:chat_id
     router.delete('/:chat_id', async (req, res) => {
         const chatId = parseInt(req.params.chat_id);
         if (isNaN(chatId))
@@ -563,7 +563,7 @@ module.exports = (db, io) => {
         }
     });
 
-    // 📌 GET /chat/:chat_id/members
+    // GET /chat/:chat_id/members
     router.get('/:chat_id/members', async (req, res) => {
         const chatId = parseInt(req.params.chat_id);
         if (isNaN(chatId))
@@ -598,7 +598,7 @@ module.exports = (db, io) => {
         }
     });
 
-    // 📌 GET /chat/:chat_id/messages
+    // GET /chat/:chat_id/messages
     router.get('/:chat_id/messages', async (req, res) => {
         const chatId = parseInt(req.params.chat_id);
         const limit = parseInt(req.query.limit) || 50;
@@ -645,7 +645,7 @@ module.exports = (db, io) => {
         }
     });
 
-    // 📌 POST /chat/:chat_id/messages
+    // POST /chat/:chat_id/messages
     router.post('/:chat_id/messages', async (req, res) => {
         const chatId = parseInt(req.params.chat_id);
         const { sender_id, message, message_type = 'text' } = req.body;
@@ -726,7 +726,7 @@ module.exports = (db, io) => {
         }
     });
 
-    // 📌 POST /chat/:chat_id/read
+    // POST /chat/:chat_id/read
     router.post('/read', async (req, res) => {
         const chatId = parseInt(req.params.chat_id);
         const { user_id, message_id } = req.body;
@@ -770,7 +770,7 @@ module.exports = (db, io) => {
         }
     });
 
-    // 📌 GET /chat/:chat_id/read-receipts
+    // GET /chat/:chat_id/read-receipts
     router.get('/:chat_id/read-receipts', async (req, res) => {
         const chatId = parseInt(req.params.chat_id);
         if (isNaN(chatId)) {

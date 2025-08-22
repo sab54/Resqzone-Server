@@ -7,9 +7,7 @@ module.exports = (db) => {
     router.use(bodyParser.urlencoded({ extended: false }));
     router.use(bodyParser.json());
 
-    /**
-     * 📌 GET /tasks/:user_id - Fetch checklist tasks assigned to a user
-     */
+    // GET /tasks/:user_id - Fetch checklist tasks assigned to a user
     router.get('/:user_id', async (req, res) => {
         const userId = parseInt(req.params.user_id);
         if (isNaN(userId)) {
@@ -38,9 +36,7 @@ module.exports = (db) => {
         }
     });
 
-    /**
-     * 📌 GET /tasks/progress/:user_id - Get user's completed checklist tasks
-     */
+    // GET /tasks/progress/:user_id - Get user's completed checklist tasks
     router.get('/progress/:user_id', async (req, res) => {
         const userId = parseInt(req.params.user_id);
         if (isNaN(userId)) {
@@ -66,9 +62,7 @@ module.exports = (db) => {
         }
     });
 
-    /**
-     * 📌 POST /tasks/complete - Mark a task as completed by a user
-     */
+    // POST /tasks/complete - Mark a task as completed by a user
     router.post('/complete', async (req, res) => {
         const { user_id, task_id } = req.body;
 
@@ -175,9 +169,7 @@ module.exports = (db) => {
         }
     });
 
-    /**
-     * 📌 POST /tasks/uncomplete - Unmark a task as completed by a user
-     */
+    // POST /tasks/uncomplete - Unmark a task as completed by a user
     router.post('/uncomplete', async (req, res) => {
         const { user_id, task_id } = req.body;
 

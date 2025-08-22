@@ -1,8 +1,5 @@
 #!/usr/bin/env node
 
-/**
- * Module dependencies.
- */
 const http = require('http');
 const { Server } = require('socket.io');
 const debug = require('debug')('tryal:server');
@@ -29,7 +26,7 @@ const attachSocketEvents = require('../sockets');
             },
         });
 
-        const app = createApp(db, io); // ✅ pass io here
+        const app = createApp(db, io); // pass io here
         app.set('port', port);
         app.set('io', io); // optional double set for access in middleware
 

@@ -1,4 +1,3 @@
-// Step 1: Setup
 const fs = require('fs');
 const path = require('path');
 const fetch = require('node-fetch');
@@ -77,7 +76,7 @@ async function tryGenerateWithGPT(topic) {
         const text = data.choices?.[0]?.message?.content;
         return JSON.parse(text);
     } catch (e) {
-        console.warn('⚠️ GPT generation failed:', e.message);
+        console.warn('GPT generation failed:', e.message);
         return null;
     }
 }
@@ -88,7 +87,7 @@ function generateLocalQuiz(topic, difficulty) {
     const fallback = dataset[topic.toLowerCase()];
 
     if (!fallback) {
-        console.warn(`⚠️ No data for "${topic}". Using random fallback.`);
+        console.warn(`No data for "${topic}". Using random fallback.`);
         return mixedQuizFromDataset(topic, dataset);
     }
 
@@ -144,9 +143,9 @@ function saveToDataset(topic, quiz) {
         const dataset = loadDataset();
         dataset[key] = quiz;
         fs.writeFileSync(datasetPath, JSON.stringify(dataset, null, 2));
-        console.log(`✅ Saved "${key}" to local dataset.`);
+        console.log(`Saved "${key}" to local dataset.`);
     } catch (e) {
-        console.error('❌ Failed to save dataset:', e.message);
+        console.error('Failed to save dataset:', e.message);
     }
 }
 
@@ -160,14 +159,14 @@ async function expandDatasetWithAI() {
         const existing = dataset[key];
 
         if (!existing || (existing?.questions?.length || 0) < 5) {
-            console.log(`⏳ Generating quiz for "${topic}"...`);
+            console.log(`Generating quiz for "${topic}"...`);
             const quiz = await generateQuizFromAI({ topic });
             dataset[key] = quiz;
         } else {
-            console.log(`✅ Skipped "${topic}", already has data.`);
+            console.log(`Skipped "${topic}", already has data.`);
         }
     }
 
     fs.writeFileSync(datasetPath, JSON.stringify(dataset, null, 2));
-    console.log('✅ Dataset expansion complete.');
+    console.log('Dataset expansion complete.');
 }

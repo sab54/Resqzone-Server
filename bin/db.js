@@ -1,5 +1,5 @@
 const config = require('../../config');
-const mysql = require('mysql2/promise'); // 🔥 notice /promise
+const mysql = require('mysql2/promise');
 
 module.exports = async (db) => {
     if (db === 'resqzone_db') {

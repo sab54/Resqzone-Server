@@ -1,3 +1,1 @@
 # ResQZone Server
-
-Main Server

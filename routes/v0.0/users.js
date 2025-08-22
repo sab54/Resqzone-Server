@@ -10,9 +10,7 @@ module.exports = (db) => {
     router.use(bodyParser.urlencoded({ extended: false }));
     router.use(bodyParser.json());
 
-    // =============================
-    // 📌 GET /user - By token or IP
-    // =============================
+    // GET /user - By token or IP
     router.get('/', async (req, res) => {
         const getToken = req.query.token;
         const ip =
@@ -43,9 +41,7 @@ module.exports = (db) => {
         }
     });
 
-    // =============================
-    // 📌 GET /chat/suggestions?q=search_term — Search active users
-    // =============================
+    // GET /chat/suggestions?q=search_term — Search active users
     router.get('/suggestions', async (req, res) => {
         const search =
             typeof req.query.search === 'string'
@@ -124,9 +120,7 @@ module.exports = (db) => {
         }
     });
 
-    // =============================
-    // 📌 POST /register
-    // =============================
+    // POST /register
     router.post('/register', async (req, res) => {
         const {
             first_name,
@@ -207,9 +201,7 @@ module.exports = (db) => {
         }
     });
 
-    // =============================
-    // 📌 POST /request-otp - Generate OTP for existing user and invalidate previous
-    // =============================
+    // POST /request-otp - Generate OTP for existing user and invalidate previous
     router.post('/request-otp', async (req, res) => {
         const { phone_number, country_code = '+44' } = req.body;
 
@@ -267,9 +259,7 @@ module.exports = (db) => {
         }
     });
 
-    // =============================
-    // 📌 POST /verify-otp - Validate OTP and return user
-    // =============================
+    // POST /verify-otp - Validate OTP and return user
     router.post('/verify-otp', async (req, res) => {
         const { user_id, otp_code } = req.body;
 
@@ -330,9 +320,7 @@ module.exports = (db) => {
         }
     });
 
-    // =============================
-    // 📌 PATCH /user/:userId/location - Update user's location
-    // =============================
+    // PATCH /user/:userId/location - Update user's location
     router.patch('/:userId/location', async (req, res) => {
         const userId = parseInt(req.params.userId);
         const { latitude, longitude } = req.body;
@@ -358,9 +346,7 @@ module.exports = (db) => {
         }
     });
 
-    // =============================
-    // 📌 Emergency Contact Routes
-    // =============================
+    // Emergency Contact Routes
     router.get('/emergency-contacts/:userId', async (req, res) => {
         const userId = parseInt(req.params.userId);
         if (isNaN(userId)) {

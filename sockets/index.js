@@ -2,7 +2,7 @@ module.exports = (io) => {
     io.on('connection', (socket) => {
         console.log(`🔌 Socket connected: ${socket.id}`);
 
-        // ✅ Join user-specific room
+        // Join user-specific room
         socket.on('join_user_room', (userId) => {
             if (typeof userId !== 'number') {
                 console.warn(`⚠️ Invalid userId for join_user_room:`, userId);
@@ -14,7 +14,7 @@ module.exports = (io) => {
             console.log(`👤 Socket ${socket.id} joined user room ${room}`);
         });
 
-        // ✅ Join a chat room
+        // Join a chat room
         socket.on('join_chat', (chatId) => {
             if (typeof chatId !== 'number') {
                 console.warn(`⚠️ Invalid chatId for join_chat:`, chatId);
@@ -26,7 +26,7 @@ module.exports = (io) => {
             console.log(`📥 Socket ${socket.id} joined room ${room}`);
         });
 
-        // ✅ Leave a chat room
+        // Leave a chat room
         socket.on('leave_chat', (chatId) => {
             if (typeof chatId !== 'number') {
                 console.warn(`⚠️ Invalid chatId for leave_chat:`, chatId);
@@ -38,7 +38,7 @@ module.exports = (io) => {
             console.log(`📤 Socket ${socket.id} left room ${room}`);
         });
 
-        // ✍️ Typing indicator (Enhanced)
+        // Typing indicator (Enhanced)
         socket.on('chat:typing_start', ({ chatId, userId }) => {
             if (!chatId || !userId) return;
             io.to(`chat_${chatId}`).emit('chat:typing_start', {
@@ -55,7 +55,7 @@ module.exports = (io) => {
             });
         });
 
-        // ❌ Disconnect
+        // Disconnect
         socket.on('disconnect', () => {
             console.log(`❌ Socket disconnected: ${socket.id}`);
         });

@@ -3,9 +3,7 @@ const express = require('express');
 module.exports = (db) => {
     const router = express.Router();
 
-    /**
-     * 📌 GET /dashboard/:user_id - Summary of user profile, XP, tasks, quizzes, badges
-     */
+    // GET /dashboard/:user_id - Summary of user profile, XP, tasks, quizzes, badges
     router.get('/:user_id', async (req, res) => {
         const userId = parseInt(req.params.user_id);
         if (isNaN(userId)) {
