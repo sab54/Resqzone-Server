@@ -4,36 +4,43 @@ const http = require('http');
 const { Server } = require('socket.io');
 const debug = require('debug')('tryal:server');
 const config = require('../../config');
-const getDb = require('../bin/db');
+const { pool } = require('../bin/db');
 const attachSocketEvents = require('../sockets');
 
 (async () => {
     try {
-        const db = await getDb('resqzone_db');
-        const createApp = require('../app');
+        // Create the HTTP server first (we'll attach app after io + app are ready)
+        const server = http.createServer();
 
-        const port = normalizePort(
-            process.env.PORT || config.domains.resqzone_api.port
-        );
-
-        const server = http.createServer(); // temp create without app
-
-        // Setup Socket.IO
+        // Socket.IO (tuned a bit for stability)
         const io = new Server(server, {
             cors: {
                 origin: '*',
                 methods: ['GET', 'POST'],
             },
+            // Optional: tune heartbeats if you see idle disconnects on mobile networks
+            pingInterval: 25000,
+            pingTimeout: 20000,
+            // Allow larger payloads if you exchange big messages
+            maxHttpBufferSize: 1e6,
         });
 
-        const app = createApp(db, io); // pass io here
+        // Build Express app, give it access to the pool + io
+        const createApp = require('../app');
+        const app = createApp(pool, io);
+
+        // Port
+        const port = normalizePort(process.env.PORT || config.domains.resqzone_api.port);
         app.set('port', port);
-        app.set('io', io); // optional double set for access in middleware
+        app.set('io', io); // optional: access io via req.app.get('io')
 
-        server.on('request', app); // attach app to server
+        // Wire the app to the server
+        server.on('request', app);
 
+        // Socket handlers
         attachSocketEvents(io);
 
+        // Start listening
         server.listen(port, '0.0.0.0', () => {
             console.log(`🚀 Server running on http://localhost:${port}`);
             console.log(`🌍 Domain: ${config.domains.resqzone_api.domain}`);
@@ -42,17 +49,55 @@ const attachSocketEvents = require('../sockets');
         server.on('error', onError);
         server.on('listening', onListening);
 
+        let shuttingDown = false;
+
+        async function shutdown(signal) {
+            if (shuttingDown) return;
+            shuttingDown = true;
+            console.log(`\n🛑 Received ${signal}. Shutting down gracefully...`);
+
+            try {
+                // 1) stop accepting new connections
+                await new Promise((resolve) => server.close(resolve));
+                console.log('HTTP server closed');
+
+                // 2) close socket.io
+                await new Promise((resolve) => io.close(() => resolve()));
+                console.log('Socket.IO closed');
+
+                // 3) drain and close the pool
+                await pool.end();
+                console.log('MySQL pool closed');
+            } catch (e) {
+                console.error('Error during shutdown:', e);
+            } finally {
+                process.exit(0);
+            }
+        }
+
+        process.on('SIGINT', () => shutdown('SIGINT'));
+        process.on('SIGTERM', () => shutdown('SIGTERM'));
+
+        // Guard against unhandled errors
+        process.on('unhandledRejection', (reason) => {
+            console.error('Unhandled Rejection:', reason);
+        });
+        process.on('uncaughtException', (err) => {
+            console.error('Uncaught Exception:', err);
+            // Let PM2 restart us cleanly
+            process.exit(1);
+        });
+
         function normalizePort(val) {
-            const port = parseInt(val, 10);
-            if (isNaN(port)) return val;
-            if (port >= 0) return port;
+            const p = parseInt(val, 10);
+            if (Number.isNaN(p)) return val;
+            if (p >= 0) return p;
             return false;
         }
 
         function onError(error) {
             if (error.syscall !== 'listen') throw error;
-            const bind =
-                typeof port === 'string' ? 'Pipe ' + port : 'Port ' + port;
+            const bind = typeof port === 'string' ? 'Pipe ' + port : 'Port ' + port;
             switch (error.code) {
                 case 'EACCES':
                     console.error(bind + ' requires elevated privileges');
@@ -67,8 +112,7 @@ const attachSocketEvents = require('../sockets');
 
         function onListening() {
             const addr = server.address();
-            const bind =
-                typeof addr === 'string' ? 'pipe ' + addr : 'port ' + addr.port;
+            const bind = typeof addr === 'string' ? 'pipe ' + addr : 'port ' + addr.port;
             debug('Listening on ' + bind);
         }
     } catch (err) {
