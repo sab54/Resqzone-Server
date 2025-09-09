@@ -62,11 +62,11 @@ async function tryGenerateWithGPT(topic) {
                     {
                         role: 'system',
                         content:
-                            'You are a quiz generator for a disaster app. Respond only in raw JSON.',
+                            'You are a quiz generator for a disaster app. Respond only in raw JSON.'
                     },
                     {
                         role: 'user',
-                        content: `Generate a multiple-choice quiz on "${topic}" with 5 questions, each with 4 options. Mark correct answers. Include title, description, category, XP reward, and difficulty label.`,
+                        content: `Generate a multiple-choice quiz on "${topic}" with 5 questions, each with 4 options. Mark correct answers. Include title, description, category, XP reward, difficulty label. Also include a checklist of related tasks (title, description, xp_reward, items array).`
                     },
                 ],
             }),
@@ -80,6 +80,7 @@ async function tryGenerateWithGPT(topic) {
         return null;
     }
 }
+
 
 // Step 5: Fallback to Local
 function generateLocalQuiz(topic, difficulty) {
@@ -107,6 +108,7 @@ function mixedQuizFromDataset(topic, dataset) {
         category: 'Preparedness',
         xp_reward: 40,
         questions,
+
     };
 }
 
@@ -123,8 +125,15 @@ function formatQuiz(raw, difficulty) {
         category: raw.category || 'Preparedness',
         xp_reward: raw.xp_reward || 50,
         questions: questions.slice(0, 5),
+        checklist: raw.checklist || {   // auto-generate empty structure if missing
+            title: `${raw.title} Tasks`,
+            description: 'Complete these tasks related to the quiz',
+            xp_reward: 50,
+            items: [],
+        },
     };
 }
+
 
 // Step 8: Dataset management
 function loadDataset() {

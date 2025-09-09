@@ -202,9 +202,10 @@ module.exports = (db) => {
                 if (isCorrect) score++;
             }
 
-            const perQuestionXP = Math.floor(
-                (quiz.xp_reward || 50) / totalQuestions
-            );
+            const perQuestionXP = totalQuestions > 0
+                ? Math.floor((quiz.xp_reward || 50) / totalQuestions)
+                : 0;
+
             const earnedXP = perQuestionXP * score;
 
             // Check existing submission
@@ -295,74 +296,110 @@ module.exports = (db) => {
 
     // POST /quizzes/ai-generate
     router.post('/ai-generate', async (req, res) => {
-        const { topic, difficulty = 'medium', chatId, createdBy } = req.body;
+        const { topic, difficulty = 'medium', chatId, createdBy, checklist } = req.body;
+
         if (!topic || !chatId || !createdBy) {
-            return res
-                .status(400)
-                .json({ success: false, message: 'Missing required fields' });
+            return res.status(400).json({ success: false, message: 'Missing required fields' });
         }
 
         try {
+            // Generate quiz via AI
             const quizData = await generateQuizFromAI({ topic, difficulty });
 
+            // Use checklist from request if provided, otherwise from AI
+            const checklistData = checklist || quizData.checklist || {
+                title: `${topic} Tasks`,
+                description: 'Complete related tasks',
+                xp_reward: 50,
+                items: [
+                    `Read about ${topic}`,
+                    `Answer a short quiz on ${topic}`
+                ],
+            };
+            console.log('Using checklist data:', checklistData);
+
+            // Insert quiz
             const [quizResult] = await db.query(
                 `INSERT INTO quizzes (title, description, category, xp_reward)
-                 VALUES (?, ?, ?, ?)`,
-                [
-                    quizData.title,
-                    quizData.description,
-                    quizData.category,
-                    quizData.xp_reward || 50,
-                ]
+             VALUES (?, ?, ?, ?)`,
+                [quizData.title, quizData.description, quizData.category, quizData.xp_reward || 50]
             );
-
             const quizId = quizResult.insertId;
 
+            // Insert questions & options
             for (const question of quizData.questions) {
                 const [qResult] = await db.query(
                     `INSERT INTO quiz_questions (quiz_id, question, question_type)
-                     VALUES (?, ?, ?)`,
-                    [
-                        quizId,
-                        question.question,
-                        question.type || 'multiple_choice',
-                    ]
+                 VALUES (?, ?, ?)`,
+                    [quizId, question.question, question.type || 'multiple_choice']
                 );
                 const questionId = qResult.insertId;
 
                 for (const option of question.options) {
                     await db.query(
                         `INSERT INTO quiz_options (question_id, option_text, is_correct)
-                         VALUES (?, ?, ?)`,
+                     VALUES (?, ?, ?)`,
                         [questionId, option.text, !!option.is_correct]
                     );
                 }
             }
 
-            const [members] = await db.query(
-                `SELECT user_id FROM chat_members WHERE chat_id = ?`,
-                [chatId]
-            );
+            // Get chat members
+            const [members] = await db.query(`SELECT user_id FROM chat_members WHERE chat_id = ?`, [chatId]);
 
+            // Assign quiz to members
             for (const { user_id } of members) {
                 await db.query(
-                    `INSERT IGNORE INTO user_assigned_quizzes (user_id, quiz_id)
-                     VALUES (?, ?)`,
+                    `INSERT IGNORE INTO user_assigned_quizzes (user_id, quiz_id) VALUES (?, ?)`,
                     [user_id, quizId]
                 );
             }
 
+            // Insert checklist tasks
+            let checklistTasks = [];
+            if (checklistData && checklistData.items && checklistData.items.length > 0) {
+                for (const item of checklistData.items) {
+                    const itemText = typeof item === 'string' ? item : item.title;
+                    const [checklistResult] = await db.query(
+                        `INSERT INTO checklist_tasks (title, description, xp_reward, is_active)
+                     VALUES (?, ?, ?, TRUE)`,
+                        [checklistData.title, itemText, checklistData.xp_reward || 50]
+                    );
+                    const taskId = checklistResult.insertId;
+                    checklistTasks.push({ id: taskId, title: itemText });
+
+                    // Assign checklist task to same members
+                    for (const { user_id } of members) {
+                        await db.query(
+                            `INSERT IGNORE INTO user_assigned_tasks (user_id, task_id) VALUES (?, ?)`,
+                            [user_id, taskId]
+                        );
+                    }
+                }
+            }
+
+            // Return full response
             return res.json({
                 success: true,
-                quiz: { id: quizId },
+                quiz: {
+                    id: quizId,
+                    title: quizData.title,
+                    description: quizData.description,
+                    category: quizData.category,
+                    xp_reward: quizData.xp_reward,
+                    questions: quizData.questions,
+                },
+                checklist: checklistTasks.length > 0 ? {
+                    title: checklistData.title,
+                    items: checklistTasks,
+                    xp_reward: checklistData.xp_reward || 50,
+                } : null,
                 assigned_to: members.length,
             });
+
         } catch (err) {
             console.error('POST /ai-generate error:', err);
-            res.status(500).json({
-                success: false,
-                error: 'Failed to generate quiz',
-            });
+            res.status(500).json({ success: false, error: 'Failed to generate quiz/checklist' });
         }
     });
 
