@@ -43,9 +43,9 @@ INSERT INTO users (
     is_active, created_by, updated_by
 ) VALUES
 ('9999999999', '+44', 'laura.murphy@example.com', 'Laura', 'Murphy', '2004-08-10', 'male', '13 Example Street', 'Birmingham', 'borough', 'M1 2BB', 'UK', TRUE, 'user', TRUE, NULL, NULL),
-('7777777777', '+44', 'dean.green@example.com', 'Dean', 'Green', '1995-04-30', 'female', '15 Example Street', 'Leeds', 'town', 'CB1 9II', 'UK', TRUE, 'moderator', TRUE, NULL, NULL),
-('0000000000', '+44', 'carolyn.taylor@example.com', 'Carolyn', 'Taylor', '2003-08-19', 'female', '15 Example Street', 'Liverpool', 'city', 'E1 1AA', 'UK', TRUE, 'user', TRUE, NULL, NULL),
-('1111111111', '+44', 'jake.ward@example.com', 'Jake', 'Ward', '1990-01-29', 'male', '88 Example Street', 'Leeds', 'village', 'S1 6FF', 'UK', TRUE, 'admin', TRUE, NULL, NULL),
+('7777777777', '+44', 'evacuating.resident@example.com', 'Evacuating', 'Resident', '1995-04-30', 'female', '15 Example Street', 'Leeds', 'town', 'CB1 9II', 'UK', TRUE, 'moderator', TRUE, NULL, NULL),
+('0000000000', '+44', 'community.volunteer@example.com', 'Community', 'Volunteer', '2003-08-19', 'female', '15 Example Street', 'Liverpool', 'city', 'E1 1AA', 'UK', TRUE, 'user', TRUE, NULL, NULL),
+('1111111111', '+44', 'local.official@example.com', 'Local', 'Official', '1990-01-29', 'male', '88 Example Street', 'Leeds', 'village', 'S1 6FF', 'UK', TRUE, 'admin', TRUE, NULL, NULL),
 ('7000000004', '+44', 'zoe.campbell@example.com', 'Zoe', 'Campbell', '2010-03-19', 'male', '96 Example Street', 'Oxford', 'borough', 'B1 7GG', 'UK', TRUE, 'moderator', TRUE, NULL, NULL),
 ('7000000005', '+44', 'ethan.walker@example.com', 'Ethan', 'Walker', '1998-12-07', 'female', '69 Example Street', 'Liverpool', 'town', 'NG1 8HH', 'UK', TRUE, 'moderator', TRUE, NULL, NULL),
 ('7000000006', '+44', 'chloe.wright@example.com', 'Chloe', 'Wright', '1995-09-11', 'male', '18 Example Street', 'Liverpool', 'city', 'S1 6FF', 'UK', TRUE, 'admin', TRUE, NULL, NULL),
@@ -123,7 +123,7 @@ CREATE TABLE documents (
     description TEXT DEFAULT NULL,
     file_url TEXT NOT NULL,
     file_type VARCHAR(50) DEFAULT NULL COMMENT 'e.g., pdf, docx, jpg',
-    category VARCHAR(100) DEFAULT 'General',
+    category ENUM('All','Earthquake', 'Flood', 'Storm', 'Tsunami', 'Fire') DEFAULT 'All',
     is_active BOOLEAN DEFAULT TRUE,
     uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -151,7 +151,61 @@ INSERT INTO documents (
     'Standard templates for final project submissions.',
     '/documents/FinalProjectTemplates.pdf',
     'application/pdf',
-    'Templates',
+    'All',
+    1 -- replace with actual admin user ID if needed
+),
+(
+    NULL,
+    'Earthquake',
+    'Earthquake Safety Checklist',
+    '/documents/Earthquake.pdf',
+    'application/pdf',
+    'Earthquake',
+    1 -- replace with actual admin user ID if needed
+),
+(
+    NULL,
+    'Earthquake Safety Actions',
+    'Recommended Earthquake Safety Actions.',
+    '/documents/Earthquake_Safety_Actions.pdf',
+    'application/pdf',
+    'Earthquake',
+    1 -- replace with actual admin user ID if needed
+),
+(
+    NULL,
+    'Flood',
+    'Flood Safety Checklist',
+    '/documents/Flood.pdf',
+    'application/pdf',
+    'Flood',
+    1 -- replace with actual admin user ID if needed
+),
+(
+    NULL,
+    'Flood Safety',
+    'Flood Safety',
+    '/documents/Flood_Safety.pdf',
+    'application/pdf',
+    'Flood',
+    1 -- replace with actual admin user ID if needed
+),
+(
+    NULL,
+    'Storm Safety',
+    'Storm Safety Tips',
+    '/documents/storm_safety_tips.pdf',
+    'application/pdf',
+    'Storm',
+    1 -- replace with actual admin user ID if needed
+),
+(
+    NULL,
+    'Tsunami',
+    'Tsunami Safety Tips',
+    '/documents/Tsunami.pdf',
+    'application/pdf',
+    'Tsunami',
     1 -- replace with actual admin user ID if needed
 );
 
@@ -437,7 +491,7 @@ CREATE TABLE system_alerts (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(255) NOT NULL COMMENT 'Alert headline',
     message TEXT COMMENT 'Detailed description of the alert',
-    category ENUM('maintenance', 'update', 'security', 'general', 'emergency') DEFAULT 'general',
+    category ENUM('maintenance', 'update', 'security', 'general', 'emergency', 'weather') DEFAULT 'general',
     urgency ENUM('severe', 'moderate', 'advisory') DEFAULT 'advisory' COMMENT 'Severity level of the alert',
     latitude DECIMAL(10,7) DEFAULT NULL COMMENT 'Latitude of alert center',
     longitude DECIMAL(10,7) DEFAULT NULL COMMENT 'Longitude of alert center',
@@ -462,7 +516,7 @@ CREATE TABLE system_alert_reads (
 CREATE TABLE user_alerts (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT UNSIGNED NOT NULL,
-    type ENUM('chat', 'task', 'quiz', 'system', 'emergency') NOT NULL,
+    type ENUM('chat', 'task', 'quiz', 'system', 'emergency', 'weather') NOT NULL,
     related_id BIGINT UNSIGNED COMMENT 'Can reference multiple types (system, chat, quiz, etc.)',
     title VARCHAR(255),
     message TEXT,
@@ -488,7 +542,17 @@ VALUES
 ('Critical Security Patch', 'A critical security vulnerability has been patched. Please update your software.', 'security', 'severe', NULL, NULL, NULL, TRUE, NULL),
 ('Emergency Tsunami Alert', 'sunami warning issued! Seek higher ground immediately.', 'emergency', 'severe', 37.4219983, -122.0840000, 100.00, TRUE, NULL),
 ('Emergency Earthquake Alert', 'Earthquake detected nearby! Follow safety protocols immediately.', 'emergency', 'severe', 51.5074, -0.1278, 10.00, TRUE, NULL),
-('General System Update', 'System has been updated to version 2.1. Please check the release notes.', 'update', 'moderate', NULL, NULL, NULL, TRUE, NULL);
+('General System Update', 'System has been updated to version 2.1. Please check the release notes.', 'update', 'moderate', NULL, NULL, NULL, TRUE, NULL),
+('Flood Warning in Low-Lying Areas- K',  'Heavy rainfall is causing river levels to rise rapidly. Move to higher ground if necessary.','emergency','severe', NULL, NULL,NULL, TRUE, NULL),
+('Urban Flood Advisory',  'Water accumulation reported in urban areas. Drive cautiously and avoid waterlogged streets.', 'weather', 'advisory', NULL, NULL, NULL, TRUE, NULL),
+('Tsunami Watch Lifted',  'No significant wave activity detected. Previous tsunami watch has been canceled.', 'emergency','advisory', NULL, NULL, NULL, TRUE, NULL),
+('Moderate Earthquake Recorded',  'A magnitude 5.0 earthquake was recorded. Be cautious of aftershocks and inspect for damage.', 'emergency', 'moderate', NULL, NULL, NULL, TRUE, NULL),
+('Aftershock Advisory','Minor aftershocks expected following earlier quake. Avoid unstable structures and debris zones.','emergency','advisory', NULL, NULL, NULL, TRUE, NULL),
+('Severe Thunderstorm Incoming','Intense thunderstorm approaching with possible hail and power outages. Stay indoors.','emergency','severe', NULL, NULL, NULL, TRUE, NULL),
+('Storm System Weakening', 'The storm is losing strength but light rain and wind may persist into the evening.','emergency','moderate', NULL, NULL, NULL, TRUE, NULL),
+('Forest Fire in Nearby Region', 'Wildfire activity reported nearby. Smoke may affect air quality. Be prepared for evacuation alerts.', 'emergency','severe', NULL, NULL, NULL, TRUE, NULL),
+('Controlled Burn Underway','Authorities are conducting a controlled burn. Do not report unless you see uncontrolled fire.','emergency','advisory', NULL, NULL, NULL, TRUE, NULL);
+
 
 INSERT INTO user_alerts
 (user_id, type, related_id, title, message, is_read, urgency, latitude, longitude, radius_km, source)
