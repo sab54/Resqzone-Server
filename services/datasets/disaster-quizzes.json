@@ -1,784 +1,93 @@
 {
-    "earthquake": {
-        "title": "Earthquake Preparedness",
-        "description": "Learn how to stay safe during and after an earthquake.",
-        "category": "Preparedness",
-        "xp_reward": 10,
-        "questions": [
-            {
-                "question": "What should you do during an earthquake if you're indoors?",
-                "type": "multiple_choice",
-                "difficulty": "medium",
-                "options": [
-                    {
-                        "text": "Run outside immediately",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "Stand near windows",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "Take cover under sturdy furniture",
-                        "is_correct": true
-                    },
-                    {
-                        "text": "Use the elevator",
-                        "is_correct": false
-                    }
-                ]
-            },
-            {
-                "question": "What should be included in your emergency earthquake kit?",
-                "type": "multiple_choice",
-                "difficulty": "easy",
-                "options": [
-                    {
-                        "text": "Canned food and water",
-                        "is_correct": true
-                    },
-                    {
-                        "text": "Board games",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "Magazines",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "Perfume",
-                        "is_correct": false
-                    }
-                ]
-            },
-            {
-                "question": "After an earthquake, what is your first priority?",
-                "type": "multiple_choice",
-                "difficulty": "medium",
-                "options": [
-                    {
-                        "text": "Calling relatives",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "Checking for gas leaks",
-                        "is_correct": true
-                    },
-                    {
-                        "text": "Watching the news",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "Posting on social media",
-                        "is_correct": false
-                    }
-                ]
-            },
-            {
-                "question": "Where is the safest place to take cover indoors?",
-                "type": "multiple_choice",
-                "difficulty": "easy",
-                "options": [
-                    {
-                        "text": "Under a doorway",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "Under a sturdy table",
-                        "is_correct": true
-                    },
-                    {
-                        "text": "Near windows",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "Next to heavy furniture",
-                        "is_correct": false
-                    }
-                ]
-            },
-            {
-                "question": "How long should your emergency supplies last?",
-                "type": "multiple_choice",
-                "difficulty": "medium",
-                "options": [
-                    {
-                        "text": "1 day",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "2 days",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "3 days or more",
-                        "is_correct": true
-                    },
-                    {
-                        "text": "Until power returns",
-                        "is_correct": false
-                    }
-                ]
-            }
+  "earthquake": {
+    "title": "Earthquake Basics",
+    "description": "How to prepare for earthquakes",
+    "category": "Preparedness",
+    "xp_reward": 70,
+    "questions": [
+      {
+        "id": 1,
+        "text": "Q1",
+        "options": [
+          "a",
+          "b",
+          "c",
+          "d"
         ],
-        "checklist": {
-            "title": "Earthquake Safety Checklist",
-            "items": [
-                "Secure heavy furniture and appliances.",
-                "Prepare an emergency kit with food, water, and medical supplies.",
-                "Identify safe spots in each room (under sturdy tables).",
-                "Practice 'Drop, Cover, and Hold On' drills.",
-                "Keep emergency contacts and evacuation routes handy.",
-                "Earthquake Preparedness Drill"
-            ]
-        }
-    },
-    "flood": {
-        "title": "Flood Safety",
-        "description": "Test your knowledge on flood response and safety tips.",
-        "category": "Preparedness",
-        "xp_reward": 10,
-        "questions": [
-            {
-                "question": "What should you do before a flood?",
-                "type": "multiple_choice",
-                "difficulty": "medium",
-                "options": [
-                    {
-                        "text": "Move to low-lying areas",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "Charge your phone and store clean water",
-                        "is_correct": true
-                    },
-                    {
-                        "text": "Go boating",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "Unplug appliances",
-                        "is_correct": false
-                    }
-                ]
-            },
-            {
-                "question": "What does 'Turn Around, Don’t Drown' mean?",
-                "type": "multiple_choice",
-                "difficulty": "easy",
-                "options": [
-                    {
-                        "text": "Avoid driving into floodwaters",
-                        "is_correct": true
-                    },
-                    {
-                        "text": "Avoid turning back on your plan",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "Don’t drown your phone",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "Always turn off electronics",
-                        "is_correct": false
-                    }
-                ]
-            },
-            {
-                "question": "What is a safe height to evacuate to?",
-                "type": "multiple_choice",
-                "difficulty": "medium",
-                "options": [
-                    {
-                        "text": "Basement",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "Second floor or higher",
-                        "is_correct": true
-                    },
-                    {
-                        "text": "Rooftop only",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "Garage",
-                        "is_correct": false
-                    }
-                ]
-            },
-            {
-                "question": "Which of the following should you avoid during a flood?",
-                "type": "multiple_choice",
-                "difficulty": "easy",
-                "options": [
-                    {
-                        "text": "Tap water",
-                        "is_correct": true
-                    },
-                    {
-                        "text": "Raincoat",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "Flashlight",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "Rain boots",
-                        "is_correct": false
-                    }
-                ]
-            },
-            {
-                "question": "After a flood, what's important?",
-                "type": "multiple_choice",
-                "difficulty": "medium",
-                "options": [
-                    {
-                        "text": "Wade through water",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "Disinfect everything",
-                        "is_correct": true
-                    },
-                    {
-                        "text": "Post online",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "Buy new shoes",
-                        "is_correct": false
-                    }
-                ]
-            }
+        "answer": "a",
+        "difficulty": "easy"
+      },
+      {
+        "id": 2,
+        "text": "Q2",
+        "options": [
+          "a",
+          "b",
+          "c",
+          "d"
         ],
-        "checklist": {
-            "title": "Flood Safety Checklist",
-            "items": [
-                "Unplug electrical appliances before leaving home.",
-                "Avoid walking or driving through floodwaters.",
-                "Prepare a small bag with essentials (food, torch, medicines).",
-                "Flood Safety Drill"
-            ]
-        }
-    },
-    "pandemic": {
-        "title": "Pandemic Awareness",
-        "description": "Understand best practices for staying healthy during pandemics.",
-        "category": "Preparedness",
-        "xp_reward": 10,
-        "questions": [
-            {
-                "question": "What is social distancing?",
-                "type": "multiple_choice",
-                "difficulty": "easy",
-                "options": [
-                    {
-                        "text": "Avoiding all social media",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "Staying at least 6 feet from others",
-                        "is_correct": true
-                    },
-                    {
-                        "text": "Isolating pets",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "Only talking to family",
-                        "is_correct": false
-                    }
-                ]
-            },
-            {
-                "question": "When should you wear a mask?",
-                "type": "multiple_choice",
-                "difficulty": "medium",
-                "options": [
-                    {
-                        "text": "Only when outside",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "When near others indoors",
-                        "is_correct": true
-                    },
-                    {
-                        "text": "While sleeping",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "At home",
-                        "is_correct": false
-                    }
-                ]
-            },
-            {
-                "question": "What should be in a pandemic emergency kit?",
-                "type": "multiple_choice",
-                "difficulty": "medium",
-                "options": [
-                    {
-                        "text": "Toilet paper and junk food",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "Hand sanitizer, masks, and meds",
-                        "is_correct": true
-                    },
-                    {
-                        "text": "Board games and chips",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "Candles and blankets",
-                        "is_correct": false
-                    }
-                ]
-            },
-            {
-                "question": "What is the best way to stop virus spread?",
-                "type": "multiple_choice",
-                "difficulty": "easy",
-                "options": [
-                    {
-                        "text": "Shake hands",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "Wash hands regularly",
-                        "is_correct": true
-                    },
-                    {
-                        "text": "Avoid naps",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "Ignore symptoms",
-                        "is_correct": false
-                    }
-                ]
-            },
-            {
-                "question": "How long should you wash your hands?",
-                "type": "multiple_choice",
-                "difficulty": "easy",
-                "options": [
-                    {
-                        "text": "5 seconds",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "10 seconds",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "20 seconds",
-                        "is_correct": true
-                    },
-                    {
-                        "text": "Until dry",
-                        "is_correct": false
-                    }
-                ]
-            }
+        "answer": "b",
+        "difficulty": "easy"
+      },
+      {
+        "id": 3,
+        "text": "Q3",
+        "options": [
+          "a",
+          "b",
+          "c",
+          "d"
         ],
-        "checklist": {
-            "title": "Pandemic Awareness Checklist",
-            "items": [
-                "Wash hands frequently with soap for at least 20 seconds.",
-                "Wear a mask in crowded or enclosed public spaces.",
-                "Maintain at least 6 feet (2 meters) distance from others.",
-                "Pandemic Awareness Drill"
-            ]
-        }
-    },
-    "tsunami": {
-        "title": " Quiz",
-        "description": "Test your knowledge on tsunami preparedness.",
-        "category": "Preparedness",
-        "xp_reward": 10,
-        "questions": [
-            {
-                "question": "What is the most important action if a tsunami warning is issued?",
-                "type": "multiple_choice",
-                "options": [
-                    {
-                        "text": "Go to the beach to see it",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "Evacuate to higher ground",
-                        "is_correct": true
-                    },
-                    {
-                        "text": "Stay indoors",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "Drive along the coast",
-                        "is_correct": false
-                    }
-                ]
-            },
-            {
-                "question": "What natural sign may indicate a tsunami is approaching?",
-                "type": "multiple_choice",
-                "options": [
-                    {
-                        "text": "Strong winds",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "Sudden sea level drop",
-                        "is_correct": true
-                    },
-                    {
-                        "text": "Birds flying inland",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "Cloudy sky",
-                        "is_correct": false
-                    }
-                ]
-            },
-            {
-                "question": "What should you include in a tsunami emergency kit?",
-                "type": "multiple_choice",
-                "options": [
-                    {
-                        "text": "Surfboard",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "Water, food, flashlight",
-                        "is_correct": true
-                    },
-                    {
-                        "text": "Swimsuit",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "Fishing rod",
-                        "is_correct": false
-                    }
-                ]
-            },
-            {
-                "question": "What does a tsunami evacuation sign indicate?",
-                "type": "multiple_choice",
-                "options": [
-                    {
-                        "text": "Safe beach spots",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "Designated evacuation routes",
-                        "is_correct": true
-                    },
-                    {
-                        "text": "Tourist attractions",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "Fishing zones",
-                        "is_correct": false
-                    }
-                ]
-            },
-            {
-                "question": "When can a tsunami occur?",
-                "type": "multiple_choice",
-                "options": [
-                    {
-                        "text": "Only during summer",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "Only at night",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "After undersea earthquakes",
-                        "is_correct": true
-                    },
-                    {
-                        "text": "During high tide",
-                        "is_correct": false
-                    }
-                ]
-            }
+        "answer": "c",
+        "difficulty": "medium"
+      },
+      {
+        "id": 4,
+        "text": "Q4",
+        "options": [
+          "a",
+          "b",
+          "c",
+          "d"
         ],
-        "checklist": {
-            "title": "Tsunami Safety Checklist",
-            "items": [
-                "Know the local tsunami evacuation routes and safe zones.",
-                "Move to higher ground immediately if a tsunami warning is issued.",
-                "Do not wait to see the wave; evacuate as soon as possible.",
-                "Tsunami Safety Drill"
-            ]
-        }
-    },
-    "wildfire": {
-        "title": "Wildfire Preparedness Quiz",
-        "description": "Get ready for wildfire threats and how to evacuate safely.",
-        "category": "Preparedness",
-        "xp_reward": 10,
-        "questions": [
-            {
-                "question": "Which item is important for wildfire preparedness?",
-                "type": "multiple_choice",
-                "options": [
-                    {
-                        "text": "Battery-powered radio",
-                        "is_correct": true
-                    },
-                    {
-                        "text": "Flamethrower",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "Candles",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "Gasoline",
-                        "is_correct": false
-                    }
-                ]
-            },
-            {
-                "question": "During a wildfire, you should:",
-                "type": "multiple_choice",
-                "options": [
-                    {
-                        "text": "Wait until the fire is close",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "Evacuate early",
-                        "is_correct": true
-                    },
-                    {
-                        "text": "Start watering your roof",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "Open all windows",
-                        "is_correct": false
-                    }
-                ]
-            }
+        "answer": "d",
+        "difficulty": "easy"
+      },
+      {
+        "id": 5,
+        "text": "Q5",
+        "options": [
+          "a",
+          "b",
+          "c",
+          "d"
         ],
-        "checklist": {
-            "title": "Wildfire Preparedness Checklist",
-            "items": [
-                "Create and practice a family evacuation plan.",
-                "Keep important documents in a fireproof and easy-to-grab container.",
-                "Clear dry leaves, debris, and flammable materials from around your home.",
-                "Wildfire Preparedness Drill"
-            ]
-        }
-    },
-    "hurricane": {
-        "title": "Hurricane Preparedness Quiz",
-        "description": "Understand how to prepare for and stay safe during hurricanes.",
-        "category": "Preparedness",
-        "xp_reward": 10,
-        "questions": [
-            {
-                "question": "What should you do before a hurricane hits?",
-                "type": "multiple_choice",
-                "difficulty": "medium",
-                "options": [
-                    {
-                        "text": "Board up windows",
-                        "is_correct": true
-                    },
-                    {
-                        "text": "Open windows for airflow",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "Turn off your phone",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "Plan a party",
-                        "is_correct": false
-                    }
-                ]
-            },
-            {
-                "question": "Where is the safest place during a hurricane?",
-                "type": "multiple_choice",
-                "difficulty": "easy",
-                "options": [
-                    {
-                        "text": "Near large glass doors",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "In a small, windowless interior room",
-                        "is_correct": true
-                    },
-                    {
-                        "text": "Outside",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "Garage",
-                        "is_correct": false
-                    }
-                ]
-            },
-            {
-                "question": "When should you evacuate for a hurricane?",
-                "type": "multiple_choice",
-                "difficulty": "medium",
-                "options": [
-                    {
-                        "text": "After the eye passes",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "When local authorities instruct",
-                        "is_correct": true
-                    },
-                    {
-                        "text": "During high winds",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "Never",
-                        "is_correct": false
-                    }
-                ]
-            },
-            {
-                "question": "What is a hurricane watch?",
-                "type": "multiple_choice",
-                "difficulty": "easy",
-                "options": [
-                    {
-                        "text": "A storm has already passed",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "Conditions are possible",
-                        "is_correct": true
-                    },
-                    {
-                        "text": "Winds are calm",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "Only inland risk",
-                        "is_correct": false
-                    }
-                ]
-            },
-            {
-                "question": "What items should be in your hurricane kit?",
-                "type": "multiple_choice",
-                "difficulty": "easy",
-                "options": [
-                    {
-                        "text": "Flashlight, water, radio",
-                        "is_correct": true
-                    },
-                    {
-                        "text": "Books, soda, mirror",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "Blankets only",
-                        "is_correct": false
-                    },
-                    {
-                        "text": "Candles and matches",
-                        "is_correct": false
-                    }
-                ]
-            }
+        "answer": "a",
+        "difficulty": "hard"
+      },
+      {
+        "id": 6,
+        "text": "Q6",
+        "options": [
+          "a",
+          "b",
+          "c",
+          "d"
         ],
-        "checklist": {
-            "title": "Hurricane Preparedness Checklist",
-            "items": [
-                "Stock up on non-perishable food and drinking water for at least 3 days.",
-                "Keep a battery-powered or hand-crank radio and extra batteries.",
-                "Prepare an emergency kit with medications, first-aid supplies, and important documents.",
-                "Secure your home: board up windows, reinforce doors, and bring in outdoor furniture.",
-                "Hurricane Preparedness Drill"
-            ]
+        "answer": "b",
+        "difficulty": "easy"
+      }
+    ],
+    "checklist": {
+      "title": "Quake Kit",
+      "description": "Assemble your kit",
+      "xp_reward": 50,
+      "items": [
+        {
+          "title": "Water",
+          "done": false
         }
-    },
-    "volcano": {
-        "title": "volcano Preparedness Quiz",
-        "description": "Test your readiness for a volcano",
-        "category": "Preparedness",
-        "xp_reward": 30,
-        "questions": []
-    },
-    "emergency kit": {
-        "title": "emergency kit Preparedness Quiz",
-        "description": "Test your readiness for a emergency kit",
-        "category": "Preparedness",
-        "xp_reward": 30,
-        "questions": []
-    },
-    "evacuation plan": {
-        "title": "evacuation plan Preparedness Quiz",
-        "description": "Test your readiness for a evacuation plan",
-        "category": "Preparedness",
-        "xp_reward": 30,
-        "questions": []
-    },
-    "disaster preparedness": {
-        "title": "disaster preparedness Preparedness Quiz",
-        "description": "Test your readiness for a disaster preparedness",
-        "category": "Preparedness",
-        "xp_reward": 30,
-        "questions": []
-    },
-    "fire safety": {
-        "title": "fire safety Preparedness Quiz",
-        "description": "Test your readiness for a fire safety",
-        "category": "Preparedness",
-        "xp_reward": 30,
-        "questions": []
-    },
-    "cyberattack": {
-        "title": "cyberattack Preparedness Quiz",
-        "description": "Test your readiness for a cyberattack",
-        "category": "Preparedness",
-        "xp_reward": 30,
-        "questions": []
-    },
-    "blackout": {
-        "title": "blackout Preparedness Quiz",
-        "description": "Test your readiness for a blackout",
-        "category": "Preparedness",
-        "xp_reward": 30,
-        "questions": []
-    },
-    "theft": {
-        "title": "theft Preparedness Quiz",
-        "description": "Test your readiness for a theft",
-        "category": "Preparedness",
-        "xp_reward": 30,
-        "questions": []
-    },
-    "asteroid": {
-        "title": "asteroid Preparedness Quiz",
-        "description": "Test your readiness for a asteroid",
-        "category": "Preparedness",
-        "xp_reward": 30,
-        "questions": []
+      ]
     }
+  }
 }

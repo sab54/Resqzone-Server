@@ -1,3 +1,32 @@
+// Server/modules/static.js
+/**
+ * static.js
+ *
+ * General-purpose helper functions used across the application.
+ *
+ * Exports:
+ * - shuffle(array)
+ *   → In-place Fisher–Yates shuffle of an array.
+ *
+ * - extractRootDomain(url)
+ *   → Given a URL, returns the root domain (handles subdomains and ccTLDs like `.co.uk`).
+ *
+ * - extractHostname(url)
+ *   → Returns the hostname stripped of protocol, port, and query string.
+ *
+ * - getIp(req, res)
+ *   → Extracts client IP from request headers / connection.
+ *   → Uses `geoip-lite` to enrich with geolocation data.
+ *   → Returns { ip, geoData }.
+ *
+ * Implementation Notes:
+ * - `shuffle` mutates the input array.
+ * - `extractRootDomain` collapses `a.b.example.com` → `example.com`, and `a.b.co.uk` → `bar.co.uk`.
+ * - `getIp` checks `x-forwarded-for` first; falls back to connection/socket addresses.
+ *
+ * Author: Sunidhi Abhange
+ */
+
 // Array Shuffler
 function shuffle(array) {
 	var currentIndex = array.length,

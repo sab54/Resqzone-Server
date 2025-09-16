@@ -1,3 +1,84 @@
+// Server/src/routes/user.js
+/**
+ * user.js (User & Contact Routes)
+ *
+ * This Express router exposes user-facing endpoints for profile lookup, search suggestions,
+ * registration and OTP login, basic geo-IP context, location updates, and CRUD-style
+ * emergency contact management.
+ *
+ * Middlewares:
+ * - express-prettify: optional pretty-printing when `?pretty=true` is supplied.
+ * - body-parser: urlencoded + JSON body parsing for form and API clients.
+ *
+ * Endpoints:
+ * 1) GET /user
+ *    - If `?token=<string>` is provided: fetches a single user profile by token.
+ *      • 200: { user, location } on success
+ *      • 401: { error: 'Token is incorrect' } when no user matches
+ *    - If no token: returns caller's IP + geo-lookup only.
+ *      • 200: { ip, geoData }
+ *    - Errors: 500 with { error: 'Failed to process request' } on DB failures.
+ *
+ * 2) GET /user/suggestions?search=<term>
+ *    - Finds up to 5 recently created, active users matching the search term across
+ *      name, email, phone, and location fields.
+ *      • 200: { success: true, data: <mapped user summaries> }
+ *      • 500: { success: false, error: 'Failed to fetch users' } on DB failures.
+ *
+ * 3) POST /user/register
+ *    - Registers a new user (first_name, email, phone_number, country_code required).
+ *      • De-dupes by (phone_number, country_code) OR email.
+ *      • Enriches city/state/country/lat/long from geo-IP when not supplied.
+ *      • Creates an OTP record (6-digit code, 5-minute expiry).
+ *      • 200: { success: true, user_id, message }
+ *      • 409: { success: false, message: 'User already exists' }
+ *      • 400 / 500 on validation or server errors.
+ *
+ * 4) POST /user/request-otp
+ *    - Issues a new OTP for an existing user; invalidates unused prior OTPs.
+ *      • 200: { success: true, user_id, message, otp_code }
+ *      • 404: { success: false, message: 'User not found' }
+ *      • 400 / 500 on validation or server errors.
+ *
+ * 5) POST /user/verify-otp
+ *    - Verifies a valid (non-expired, not already used) OTP and marks the user’s
+ *      phone as verified.
+ *      • 200: { success: true, message: 'OTP verified', user }
+ *      • 401: { success: false, message: 'Invalid or expired OTP' }
+ *      • 429: { success: false, message: 'Too many attempts' }
+ *      • 400 / 500 on validation or server errors.
+ *
+ * 6) PATCH /user/:userId/location
+ *    - Updates a user’s latitude/longitude.
+ *      • 200: { success: true, message: 'User location updated' }
+ *      • 400 / 500 on validation or server errors.
+ *
+ * 7) GET /user/emergency-contacts/:userId
+ *    - Lists non-deleted emergency contacts for the user, newest first.
+ *      • 200: { success: true, data: [...] }
+ *      • 400 / 500 on validation or server errors.
+ *
+ * 8) POST /user/emergency-contacts
+ *    - Adds an emergency contact if not present; restores if previously soft-deleted.
+ *      • 200: { success: true, message: 'Emergency contact added' | 'Emergency contact restored' }
+ *      • 409: { success: false, message: 'Contact already exists' } if active duplicate
+ *      • 400 / 500 on validation or server errors.
+ *
+ * 9) DELETE /user/emergency-contacts/:id
+ *    - Soft-deletes a contact (sets deleted_at).
+ *      • 200: { success: true, message: 'Emergency contact deleted' }
+ *      • 400 / 500 on validation or server errors.
+ *
+ * Implementation Notes:
+ * - IP Derivation: prioritizes 'x-forwarded-for' then connection/socket addresses.
+ * - Geo: Uses `geoip-lite.lookup(ip)`; fields may be undefined depending on IP.
+ * - DB Layer: expects a `db.query(sql, params)` with [rows] semantics.
+ * - Security: OTP values are logged to the server console for dev/testing; in production,
+ *   use a secure channel (e.g., SMS provider) and remove logs.
+ *
+ * Author: Sunidhi Abhange
+ */
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const geoip = require('geoip-lite');

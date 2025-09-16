@@ -1,3 +1,61 @@
+// Server/src/routes/documents.js
+/**
+ * documents.js (User Documents & Read-State Routes)
+ *
+ * Provides REST endpoints to manage user-specific documents and their read/unread state.
+ *
+ * Middleware:
+ * - express-prettify: pretty JSON when `?pretty=true`.
+ * - body-parser: urlencoded + JSON parsing.
+ *
+ * Endpoints:
+ * 1) GET /documents/:userId
+ *    - Lists documents belonging to the user or global (user_id NULL), excluding soft-deleted ones.
+ *    - Includes a per-document `read_at` for the requesting user via subquery.
+ *    - 200: { success: true, data: [...] }
+ *    - 400: { success: false, message: 'Invalid or missing user ID' }
+ *    - 500: { success: false, message: 'Failed to fetch documents' }
+ *
+ * 2) POST /documents
+ *    - Adds a new document.
+ *    - Body required: { user_id, title, url }
+ *    - Optional: { description?, file_type?, category='General', uploadedBy=null }
+ *    - 201: { success: true, message: 'Document added successfully' }
+ *    - 400: { success: false, message: 'Missing required fields (user_id, title, url)' }
+ *    - 500: { success: false, message: 'Failed to add document' }
+ *
+ * 3) POST /documents/read
+ *    - Marks a document as read for a user (upserts with `ON DUPLICATE KEY UPDATE`).
+ *    - Body: { user_id, document_id }
+ *    - 200: { success: true, message: 'Document marked as read' }
+ *    - 400 / 500 on validation or DB errors.
+ *
+ * 4) DELETE /documents/read
+ *    - Marks a document as unread by deleting the read marker.
+ *    - Query: ?user_id=&document_id=
+ *    - 200: { success: true, message: 'Document marked as unread' }
+ *    - 404: { success: false, message: 'Document was not marked as read' } (no affected rows)
+ *    - 400 / 500 on validation or DB errors.
+ *
+ * 5) DELETE /documents
+ *    - Soft-deletes a single document for a user by URL.
+ *    - Body: { user_id, url }
+ *    - 200: { success: true, message: 'Document removed' }
+ *    - 404: { success: false, message: 'Document not found' }
+ *    - 400 / 500 on validation or DB errors.
+ *
+ * 6) DELETE /documents/all
+ *    - Soft-deletes all documents for a user.
+ *    - Body: { user_id }
+ *    - 200: { success: true, message: 'All documents cleared for user' }
+ *    - 400 / 500 on validation or DB errors.
+ *
+ * DB Contract:
+ * - Expects `db.query(sql, params)` returning `[rows]` for SELECT and `[result]` with `affectedRows` for mutations.
+ *
+ * Author: Sunidhi Abhange
+ */
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const pretty = require('express-prettify');

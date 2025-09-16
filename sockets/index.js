@@ -1,3 +1,40 @@
+/**
+ * services/sockets/index.js
+ *
+ * This module configures and manages real-time WebSocket communication using Socket.IO.
+ * It defines event listeners for user-specific and chat-related rooms, typing indicators,
+ * and connection lifecycle events to facilitate interactive chat features.
+ *
+ * Key functionalities:
+ * - **User Room Management**:
+ *   - `join_user_room`: Allows a client to join a private room tied to their user ID.
+ *     Ensures the `userId` is a valid number before joining `user_<userId>`.
+ *
+ * - **Chat Room Management**:
+ *   - `join_chat`: Lets a socket join a specific chat room identified by `chatId`.
+ *   - `leave_chat`: Lets a socket leave a chat room. Both validate that `chatId` is numeric.
+ *
+ * - **Typing Indicators**:
+ *   - `chat:typing_start`: Broadcasts to all members of a chat room that a user has started typing.
+ *   - `chat:typing_stop`: Broadcasts to all members of a chat room that a user has stopped typing.
+ *   - Both events validate that `chatId` and `userId` are provided before broadcasting.
+ *
+ * - **Connection Lifecycle**:
+ *   - Logs when a socket connects (with socket ID).
+ *   - Logs when a socket disconnects, ensuring proper visibility into connection state changes.
+ *
+ * Error Handling & Validation:
+ * - For `join_user_room`, `join_chat`, and `leave_chat`, invalid IDs (non-numeric) are ignored,
+ *   and warnings are logged rather than throwing exceptions.
+ *
+ * Notes:
+ * - This module does not handle authentication; it assumes the caller has already verified
+ *   the socket’s identity and authorization to join the requested rooms.
+ * - Room names are namespaced with `user_` or `chat_` prefixes to avoid collisions.
+ *
+ * Author: Sunidhi Abhange
+ */
+
 module.exports = (io) => {
     io.on('connection', (socket) => {
         console.log(`🔌 Socket connected: ${socket.id}`);

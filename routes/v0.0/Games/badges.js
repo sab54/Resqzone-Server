@@ -1,3 +1,43 @@
+// Server/src/routes/badges.js
+/**
+ * badges.js
+ *
+ * Router exposing CRUD-lite endpoints for the badges feature.
+ *
+ * Endpoints:
+ * - GET "/"                → List all available badges (id, name, description, icon_url, condition).
+ * - GET "/user/:user_id"   → List badges earned by a specific user (with earned_at), most recent first.
+ * - POST "/award"          → Assign a badge to a user (idempotent via INSERT IGNORE).
+ *
+ * Key behaviors & flow:
+ * 1) Parsing:
+ *    - Uses urlencoded and JSON body parsers for request payloads.
+ *
+ * 2) GET "/":
+ *    - Executes a SELECT against the `badges` table ordered by id ASC.
+ *    - Responds: { success: true, badges: [...] }.
+ *    - On DB failure: 500 with { success: false, error: "Failed to fetch badges" }.
+ *
+ * 3) GET "/user/:user_id":
+ *    - Validates :user_id as an integer; otherwise 400 with { success: false, message }.
+ *    - Joins user_badges → badges, ordered by earned_at DESC.
+ *    - Responds: { success: true, earned: [...] }.
+ *    - On DB failure: 500 with { success: false, error: "Failed to fetch user badges" }.
+ *
+ * 4) POST "/award":
+ *    - Validates body.user_id and body.badge_id as integers; otherwise 400 with { success: false, message }.
+ *    - INSERT IGNORE into user_badges(user_id, badge_id) for idempotency.
+ *    - affectedRows === 0 → already awarded; otherwise success.
+ *    - Responds: { success: true, message: "Badge awarded successfully" | "Badge already awarded" }.
+ *    - On DB failure: 500 with { success: false, error: "Failed to assign badge" }.
+ *
+ * Notes:
+ * - SQL uses a backticked `condition` column to avoid keyword conflicts.
+ * - The router is case-sensitive: new express.Router({ caseSensitive: true }).
+ *
+ * Author: Sunidhi Abhange
+ */
+
 const express = require('express');
 const bodyParser = require('body-parser');
 

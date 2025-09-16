@@ -1,3 +1,94 @@
+// Server/src/routes/chat.js
+/**
+ * chat.js (Conversations, Members, Messages, Read Receipts, and Local Groups)
+ *
+ * REST endpoints powering 1:1 and group chats, membership changes, message flow,
+ * read receipts, listing and discovery of local groups, and hard deletes.
+ *
+ * Middleware:
+ * - body-parser: JSON + urlencoded parsing.
+ *
+ * Endpoints:
+ * 1) GET /chat/list/:user_id
+ *    - Returns all chats the user participates in with enrichment:
+ *      • last message (content/sender/timestamp), members list (with role),
+ *      • group metadata (radius, lat/lng), and `is_nearby` flag for 1:1 chats
+ *        based on matching postal codes.
+ *    - Emits `chat:list_update` to the user's room after computing payload.
+ *    - 200: { success: true, data: [...] }
+ *    - 400: { success: false, error: 'Invalid user_id' }
+ *    - 404: { success: false, error: 'User not found' }
+ *    - 500: { success: false, error: 'Failed to fetch chats' }
+ *
+ * 2) POST /chat/create
+ *    - Creates a new direct or group chat. If direct and already exists, returns it.
+ *    - Body: { user_id, participant_ids: number[], is_group=false, group_name=null }
+ *    - Side effects:
+ *      • Inserts chat, members (owner/member roles), and user_alerts for participants.
+ *    - 201: { success: true, message, chat_id, chat: {..., members:[...] } }
+ *    - 200: { success: true, message: 'Chat already exists', chat_id } (for direct)
+ *    - 400 / 500 on validation / server errors.
+ *
+ * 3) POST /chat/:chat_id/add-members
+ *    - Adds members to an existing group (INSERT IGNORE to avoid duplicates).
+ *    - Body: { user_id, user_ids: number[] }
+ *    - Inserts user_alerts for each added member (urgency='advisory').
+ *    - Emits `chat:list_update:trigger` to each added member.
+ *    - 200: { success: true, message, added_user_ids }
+ *    - 400 / 500 on validation / server errors.
+ *
+ * 4) DELETE /chat/:chat_id/remove-member
+ *    - Removes a member from a group; only owner can remove others.
+ *    - Query: ?user_id=<removee>&requested_by=<ownerId>
+ *    - If the group becomes empty afterwards, deletes messages, receipts, and the chat.
+ *    - Emits `chat:list_update:trigger` to the removed user.
+ *    - 200 / 400 (owner cannot remove self) / 403 (non-owner) / 500.
+ *
+ * 5) POST /chat/local-groups/join
+ *    - Finds a nearby location-based group via Haversine distance; joins or creates one.
+ *    - Body: { userId, latitude, longitude, hasAddress, address }
+ *    - Inserts a 'moderate' system alert and emits list update.
+ *    - 201 when a new group is created, 200 when joined, 400/500 on errors.
+ *
+ * 6) DELETE /chat/:chat_id
+ *    - Hard-deletes a chat and its messages/members.
+ *    - 200 on success, 400/500 on errors.
+ *
+ * 7) GET /chat/:chat_id/members
+ *    - Lists chat members with display-ready mapping.
+ *    - 200: { success: true, data: members[] }, 400/500 on errors.
+ *
+ * 8) GET /chat/:chat_id/messages
+ *    - Paged ascending chronological message fetch.
+ *    - Query: ?limit=&offset=
+ *    - 200: { success: true, data: messages[] }, 400/500 on errors.
+ *
+ * 9) POST /chat/:chat_id/messages
+ *    - Sends a message; supports message_type 'text' or 'location' (stores "{latitude:x,longitude:y}").
+ *    - Emits `chat:new_message` to chat room and `chat:list_update:trigger` to sender room.
+ *    - 201: { success: true, message: 'Message sent', message_id }
+ *    - 400/500 on errors.
+ *
+ * 10) POST /chat/read
+ *    - Upserts read receipts for a chat: { chat_id (via req.params—see route), user_id, message_id }.
+ *      NOTE: The handler path is `/read` and reads `req.params.chat_id`.
+ *    - Emits `chat:read_receipt` to the chat room.
+ *    - 200 or 400/500 on errors.
+ *
+ * 11) GET /chat/:chat_id/read-receipts
+ *    - Lists read receipts with user info.
+ *    - 200: { success: true, data: [...] }, 400/500 on errors.
+ *
+ * Socket Rooms:
+ * - Per-user:  user_<id>
+ * - Per-chat:  chat_<id>
+ *
+ * DB Contract:
+ * - Expects `db.query(sql, params)` resolving to `[rows]` or `[result]` with `insertId/affectedRows`.
+ *
+ * Author: Sunidhi Abhange
+ */
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const fetch = require('node-fetch');

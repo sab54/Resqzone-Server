@@ -1,3 +1,59 @@
+// Server/src/routes/alerts.js
+/**
+ * alerts.js (System & User Alerts)
+ *
+ * Exposes endpoints to list/paginate system alerts, deliver user-scoped alerts,
+ * emit geo-targeted emergency alerts, track read-state, and delete alerts.
+ *
+ * Middleware:
+ * - body-parser: urlencoded + JSON parsing.
+ *
+ * Endpoints:
+ * 1) GET /alerts
+ *    - Query: ?category=All|<string>&page=1&pageSize=6
+ *    - Returns paginated system alerts (optionally filtered by category).
+ *    - 200: { alerts, hasMore, totalCount }
+ *    - 500: { success:false, error:'Failed to fetch alerts' }
+ *
+ * 2) GET /alerts/user/:userId
+ *    - Lists user-specific alerts (most recent first).
+ *    - 200: { success:true, alerts }
+ *    - 400 on bad userId, 500 on DB error.
+ *
+ * 3) GET /alerts/system
+ *    - Lists active system alerts and includes per-user read flag by LEFT JOIN
+ *      against system_alert_reads for the supplied ?userId (optional; 0 when absent).
+ *    - 200: { success:true, systemAlerts } or 500 on error.
+ *
+ * 4) POST /alerts/system
+ *    - Creates user_alerts for each userId provided.
+ *    - Body: { userIds:number[], title, message, urgency?, latitude?, longitude?, radius_km?, source? }
+ *    - 200: { success:true, message:`Alerts sent to N users` }
+ *    - 400 on validation fail, 500 on DB error.
+ *
+ * 5) POST /alerts/emergency
+ *    - Inserts a system_alert (category='emergency') then finds users within
+ *      radius using Haversine SQL and creates user_alerts + emergency_logs.
+ *    - Body: { title, message, latitude, longitude, radius_km, urgency?, created_by? }
+ *    - 200: { success:true, message:`Emergency alert sent to N users`, alert_id }
+ *    - 400/500 on errors.
+ *
+ * 6) PATCH /alerts/:alertId/read
+ *    - Marks a user alert read OR records a system alert as read for a user.
+ *    - Body: { type:'user'|'system', userId? } (userId required for 'system').
+ *    - 200 with specific success message, 400 on invalid params, 500 on error.
+ *
+ * 7) DELETE /alerts/:alertId
+ *    - Deletes a user_alert by id.
+ *    - 200: { success:true, message:'Alert deleted' }, 400/500 on errors.
+ *
+ * DB Contract:
+ * - Expects `db.query(sql, params)` that resolves to `[rows]` (SELECT) or
+ *   `[result]` with `{insertId, affectedRows}` (mutations).
+ *
+ * Author: Sunidhi Abhange
+ */
+
 const express = require('express');
 const bodyParser = require('body-parser');
 

@@ -1,3 +1,60 @@
+// Server/src/app.js
+/**
+ * app.js
+ *
+ * What This File Does:
+ *
+ * This file defines and configures the core Express application for the ResQZone API.
+ * It pulls in global middleware, config values, and routes, and returns a ready-to-use
+ * Express `app` instance that can be started by a server entry point.
+ *
+ * 1. View & Routing Configuration
+ *    - Sets EJS as the view engine and resolves view paths.
+ *    - Applies `caseSensitiveRouting` and `trustProxy` from config.
+ *
+ * 2. Middleware Setup
+ *    - Compression: Enables gzip/deflate compression for all responses.
+ *    - Body Parsers: Parses JSON and URL-encoded request bodies.
+ *    - Decryption: Uses `decryptMiddleware` to handle encrypted payloads (after body parsing).
+ *    - Encryption: Uses `encryptMiddleware` to wrap outgoing responses.
+ *    - Cookie Parser: Reads cookies from incoming requests.
+ *    - Static Serving: Serves assets from `/www/static` and attaches favicon.
+ *
+ * 3. Optional Session Handling
+ *    - If `enableSession` is true, configures sessions with `sessionSecret`.
+ *    - Initializes Passport.js for authentication.
+ *    - Enables flash messaging support.
+ *
+ * 4. Security & Access Controls
+ *    - Sets permissive CORS headers for all origins and methods.
+ *    - Adds global rate limiting (`rateLimitWindowMs`, `rateLimitMaxRequests`).
+ *    - Returns `{ error: "Too many API requests" }` when limit is exceeded.
+ *
+ * 5. API Route Mounting
+ *    - `/v0.0/users`        → User APIs
+ *    - `/v0.0/news`         → News APIs
+ *    - `/v0.0/documents`    → Document APIs
+ *    - `/v0.0/chat`         → Chat APIs (with optional socket.io integration)
+ *    - `/v0.0/quizzes`      → Quiz game APIs
+ *    - `/v0.0/tasks`        → Task game APIs
+ *    - `/v0.0/badges`       → Badge APIs
+ *    - `/v0.0/dashboard`    → Dashboard APIs
+ *    - `/v0.0/leaderboard`  → Leaderboard APIs
+ *    - `/v0.0/alerts`       → Alert APIs
+ *
+ * 6. Error Handling
+ *    - Adds a 404 handler for unmatched routes.
+ *    - Defines a global error handler that renders `Error/error.ejs`.
+ *
+ * Notes:
+ * - The `io` socket.io instance (if provided) is attached via `app.set('io', io)`
+ *   so that routes can access it.
+ * - Rate limiting is global but could be scoped by uncommenting the prefixed uses.
+ * - This file does not itself call `app.listen`; it only returns the configured `app`.
+ *
+ * Author: Sunidhi Abhange
+ */
+
 const Config = require('../config');
 const createError = require('http-errors');
 const express = require('express');

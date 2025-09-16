@@ -1,3 +1,53 @@
+// Server/src/routes/newsBookmarks.js
+/**
+ * newsBookmarks.js (News Bookmark Routes)
+ *
+ * Exposes REST endpoints to manage per-user news bookmarks.
+ *
+ * Middleware:
+ * - express-prettify: pretty JSON output when `?pretty=true`.
+ * - body-parser: urlencoded + JSON parsing.
+ *
+ * Helper:
+ * - formatDateForMySQL(isoDate): Converts an ISO string to "YYYY-MM-DD HH:MM:SS" (MySQL DATETIME).
+ *   Returns null if no date provided.
+ *
+ * Endpoints:
+ * 1) GET /bookmarks?user_id=<id>
+ *    - Lists all bookmarks for a user ordered by `bookmarkedAt` DESC.
+ *    - 200: Array of bookmarks with normalized field names and ISO-like date strings.
+ *    - 400: { error: 'Missing user_id' } if query param absent.
+ *    - 500: { error: 'Failed to fetch bookmarks' } on DB error.
+ *
+ * 2) POST /bookmarks
+ *    - Adds a bookmark. Body fields:
+ *      { user_id, url, title, description, author?, source?: { id?, name? }, urlToImage?, content?, publishedAt?, category?, bookmarkedAt? }
+ *    - Defaults: author=null, source fields=null, urlToImage=null, content=null, category='General',
+ *      publishedAt -> formatted or null, bookmarkedAt -> provided or "now" (formatted).
+ *    - 200: { status: 'added' } on success.
+ *    - 400: { error: 'Missing user_id or url' } when required fields absent.
+ *    - 409: { error: 'Bookmark already exists' } when MySQL ER_DUP_ENTRY thrown.
+ *    - 500: { error: 'Failed to add bookmark', detail } on other DB errors.
+ *
+ * 3) DELETE /bookmarks?user_id=<id>&url=<url>
+ *    - Deletes a single bookmark.
+ *    - 200: { status: 'deleted' } on success.
+ *    - 404: { message: 'Bookmark not found' } when no rows affected.
+ *    - 400: { error: 'Missing user_id or url' } when parameters missing.
+ *    - 500: { error: 'Failed to delete bookmark' } on DB error.
+ *
+ * 4) DELETE /bookmarks/all?user_id=<id>
+ *    - Deletes all bookmarks for the given user.
+ *    - 200: { status: 'cleared', deleted: <affectedRows> }.
+ *    - 400: { error: 'Missing user_id' } when parameter missing.
+ *    - 500: { error: 'Failed to delete all bookmarks' } on DB error.
+ *
+ * DB Contract:
+ * - Expects `db.query(sql, params)` that resolves to `[rows]` or `[result]` with `affectedRows`.
+ *
+ * Author: Sunidhi Abhange
+ */
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const pretty = require('express-prettify');

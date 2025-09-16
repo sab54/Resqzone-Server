@@ -1,3 +1,47 @@
+// Server/routes/v0.0/Games/tasks.js
+/**
+ * tasks.js
+ *
+ * Router for checklist tasks assigned to users, including progress and XP/badge updates.
+ *
+ * Endpoints:
+ * - GET "/:user_id"
+ *   → List active checklist tasks assigned to a user (ordered by due_date ASC).
+ *
+ * - GET "/progress/:user_id"
+ *   → List completed checklist tasks for a user (task_id + completed_at).
+ *
+ * - POST "/complete"
+ *   → Mark a task as completed for a user:
+ *      * Idempotent: if already completed, returns success with message.
+ *      * Grants task XP to user_levels (INSERT or increment with ON DUPLICATE).
+ *      * Badge rules:
+ *          - After 1st completion       → award "Starter".
+ *          - After 5th completion       → award "Prep Pro".
+ *          - After all tasks completed  → award "Checklist Champion".
+ *
+ * - POST "/uncomplete"
+ *   → Unmark a task as completed for a user:
+ *      * Removes row from user_tasks.
+ *      * Deducts XP (non-negative clamp) and recalculates level.
+ *      * Badge removals:
+ *          - If completedCount === 0       → remove "Starter".
+ *          - If completedCount < 5         → remove "Prep Pro".
+ *          - If completedCount < total     → remove "Checklist Champion".
+ *      * Logs the action into admin_action_logs.
+ *
+ * Validation & Errors:
+ * - Path params user_id must be integers; otherwise 400 with a clear message.
+ * - Task existence check on complete/uncomplete; 404 when missing/inactive as appropriate.
+ * - Database errors respond 500 with stable error strings per route.
+ *
+ * Notes:
+ * - Uses parameter binding (`?`) and INSERT IGNORE for idempotent badge awards.
+ * - caseSensitive router; body parsers enabled for urlencoded + JSON.
+ *
+ * Author: Sunidhi Abhange
+ */
+
 const express = require('express');
 const bodyParser = require('body-parser');
 

@@ -1,3 +1,57 @@
+// services/quizAI.js
+/**
+ * quizAI.js
+ *
+ * Purpose:
+ * Generate disaster-preparedness quizzes either via OpenAI (when OPENAI_API_KEY
+ * is configured) or by falling back to a local JSON dataset. Formatted results
+ * are returned for in-app use and raw GPT responses are persisted for reuse.
+ *
+ * Public API:
+ * - generateQuizFromAI({ topic, difficulty = 'medium' })
+ *   Attempts GPT generation; on success, saves the raw quiz to the dataset and
+ *   returns a formatted quiz (max 5 questions), filtered by `difficulty` when
+ *   labels exist. If GPT is unavailable or fails, returns a local quiz (topic-
+ *   specific when available, otherwise a mixed fallback from all topics).
+ *
+ * - expandDatasetWithAI()
+ *   Iterates over the predefined list of disaster topics and ensures each key
+ *   has at least 5 questions stored. Generates missing entries via the same
+ *   GPT/local path and writes the final dataset to disk.
+ *
+ * Key Internals:
+ * - tryGenerateWithGPT(topic)
+ *   Calls OpenAI Chat Completions (gpt-3.5-turbo) requesting JSON-only content
+ *   describing a quiz (title, description, category, xp_reward, questions with
+ *   correct answers, and a checklist). Returns parsed JSON or null on failure.
+ *
+ * - generateLocalQuiz(topic, difficulty)
+ *   Loads dataset and returns the topic’s quiz if present; otherwise falls back
+ *   to mixedQuizFromDataset (5 random questions across all topics).
+ *
+ * - formatQuiz(raw, difficulty)
+ *   Final shaping:
+ *     - Filters by `difficulty` only if labels are present (may result in zero).
+ *     - Limits to 5 questions.
+ *     - Defaults category/xp_reward if absent.
+ *     - Ensures a checklist object exists (auto-generates if missing).
+ *
+ * - loadDataset() / saveToDataset(topic, quiz)
+ *   Safe JSON file I/O with pretty-printing. Failures are caught and logged.
+ *
+ * Error Handling:
+ * - GPT/network/parse issues are logged as warnings and the flow falls back to
+ *   local generation.
+ * - Dataset I/O issues are logged but do not throw; a best-effort quiz is
+ *   returned to keep the app responsive.
+ *
+ * Notes:
+ * - OPENAI_API_KEY is read from ../../config at module load.
+ * - Dataset path: "<this file>/datasets/disaster-quizzes.json".
+ *
+ * Author: Sunidhi Abhange
+ */
+
 const fs = require('fs');
 const path = require('path');
 const fetch = require('node-fetch');

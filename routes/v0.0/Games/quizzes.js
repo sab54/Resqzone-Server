@@ -1,3 +1,42 @@
+// Server/Games/quizzes.js
+/**
+ * quizzes.js
+ *
+ * Router exposing quiz listing, retrieval, submission, stats, and AI-driven creation.
+ *
+ * Endpoints:
+ * - GET "/"                       → List all active quizzes (newest first).
+ * - GET "/user/:user_id"          → Quizzes assigned to a specific user.
+ * - GET "/history/:user_id"       → A user's quiz submissions history.
+ * - GET "/:id/stats"              → Aggregate stats for a single quiz (attempts, max, average).
+ * - GET "/:id"                    → Full quiz with questions and options (if active).
+ * - POST "/:id/submit"            → Submit answers; awards XP and optional badge when perfect.
+ * - POST "/ai-generate"           → Create a quiz (and optional checklist) via AI and assign to a chat's members.
+ *
+ * Validation & Flow Highlights:
+ * - Integer checks for `:user_id`/`:id` where applicable; 400 on invalid input.
+ * - 404 when quiz or user-facing entity is not found (e.g., inactive/missing quiz).
+ * - Submission:
+ *   - Scores answers by exact set match against correct options.
+ *   - First attempt inserts submission and increments XP (ON DUPLICATE updates).
+ *   - Improved attempt updates score and increments only the delta XP.
+ *   - Awards "Quiz Whiz" badge on perfect score (idempotent insert).
+ * - AI generation:
+ *   - Uses `generateQuizFromAI({ topic, difficulty })`.
+ *   - Accepts request `checklist` override; otherwise uses AI-provided/default checklist.
+ *   - Inserts quiz, questions, options; assigns quiz and checklist tasks to chat members.
+ *
+ * Responses:
+ * - Success payloads are { success: true, ... } with route-specific fields.
+ * - Failures use 400/404 for validation/missing resources and 500 with a stable error message.
+ *
+ * Notes:
+ * - Body parsers enabled for urlencoded + JSON.
+ * - SQL uses bound parameters (`?`) and idempotent inserts where needed.
+ *
+ * Author: Sunidhi Abhange
+ */
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const { generateQuizFromAI } = require('../../../services/quizAI');
