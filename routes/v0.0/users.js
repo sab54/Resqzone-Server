@@ -273,6 +273,7 @@ module.exports = (db) => {
                 success: true,
                 message: 'User registered successfully',
                 user_id: insertResult.insertId,
+                otp_code: otp_code
             });
         } catch (err) {
             console.error(err);
